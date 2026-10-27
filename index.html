@@ -141,6 +141,59 @@ details[open] summary { margin-bottom: 8px; }
 .lines .msg { padding: 8px 14px; font-size: 14px; border-top: 1px solid var(--line); min-height: 38px; }
 .lines .msg code { font-family: var(--mono); background: var(--soft); padding: 0 4px; white-space: pre; }
 .lines .msg.bad { font-weight: 600; }
+.kind { grid-template-columns: 1fr 1fr 1fr; }
+.wwrap { display: grid; grid-template-columns: minmax(0, 1fr) 190px; gap: 14px; align-items: start; }
+.wboard { border: 1.5px solid var(--strong); background: var(--bg); overflow-x: auto; }
+#wsvg { display: block; width: 100%; min-width: 580px; height: auto; touch-action: none; user-select: none; -webkit-user-select: none; }
+.tray { display: flex; flex-direction: column; gap: 6px; position: sticky; top: calc(env(safe-area-inset-top, 0px) + 10px); }
+.tray h4 { margin: 6px 0 0; font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .3px; }
+.tray button { font: inherit; font-size: 13.5px; text-align: left; padding: 6px 10px; border: 1.5px solid var(--line); background: var(--bg); color: var(--fg); cursor: grab; display: flex; gap: 8px; align-items: center; touch-action: none; }
+.tray button:hover { border-color: var(--strong); }
+.tray button i { width: 12px; height: 12px; border-radius: 50%; display: inline-block; flex: none; border: 1px solid var(--strong); }
+.tray .wnote { font-size: 12.5px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
+#wnext { width: 26px; height: 6px; border-radius: 3px; display: inline-block; }
+.wrows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.wrows li { display: flex; flex-direction: column; gap: 2px; border-left: 3px solid var(--strong); padding: 2px 0 2px 10px; }
+.wrows li.bad { border-left-style: dashed; }
+.wrows li span { font-size: 14px; color: var(--muted); }
+.wrows li.bad span { color: var(--fg); }
+.hint { background: var(--soft); padding: 8px 12px; font-size: 14px; }
+.whelp { font-size: 13px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 4px 16px; }
+/* 보드 그림 */
+.hdboard { fill: var(--strong); }
+.hdcap { fill: var(--bg); font: 600 12px var(--sans); }
+.hdpin { fill: var(--bg); stroke: var(--bg); }
+.hdpin.g { fill: #555; } .hdpin.p { fill: #d32f2f; } .hdpin.io { fill: #f2c94c; }
+.hdlab { fill: var(--bg); font: 500 11px var(--mono); opacity: .9; }
+.hdlab.o { opacity: .45; }
+.bboard { fill: #f4f4f1; stroke: #cfcfc8; }
+.bbgap { fill: #e4e4dd; }
+.hole { fill: #a3a39a; }
+.rm { stroke: #1e63c6; stroke-width: 2; opacity: .55; } .rp { stroke: #d32f2f; stroke-width: 2; opacity: .55; }
+.bblab { fill: #666; font: 600 11px var(--mono); } .rmt { fill: #1e63c6; } .rpt { fill: #d32f2f; }
+.bbnum { fill: #888; font: 9px var(--mono); }
+.leg { stroke: #8a8a8a; stroke-width: 2.4; stroke-linecap: round; }
+.ledbody { stroke: #222; stroke-width: 1.2; cursor: grab; }
+.plus { fill: #c62828; font: 700 11px var(--mono); pointer-events: none; }
+.resbody { fill: #d8bd8f; stroke: #6d5534; cursor: grab; }
+.resval { fill: #444; font: 600 9.5px var(--mono); pointer-events: none; }
+.leghandle { fill: transparent; stroke: transparent; cursor: crosshair; }
+.leghandle:hover { stroke: #111; stroke-width: 1.5; }
+.mod { cursor: grab; stroke: #222; stroke-width: 1.2; fill-opacity: .9; }
+.mod.dht { fill: #fbfbfb; } .mod.sr04 { fill: #2f62b3; }
+.eye { fill: #d9dde3; stroke: #555; stroke-width: 1.5; }
+.grill { fill: #c9ced6; }
+.modlab { font: 700 9.5px var(--mono); fill: #111; }
+.modlab.lt { fill: #fff; }
+.mod.bh1750 { fill: #6a3fa0; } .mod.lcd { fill: #1f6f43; } .mod.servo { fill: #2a5db0; } .mod.drv { fill: #b71c1c; }
+.modname { font: 600 10px var(--sans); fill: #444; }
+.wire { fill: none; stroke-width: 4.5; stroke-linecap: round; cursor: pointer; }
+.wsel { fill: none; stroke: #111; stroke-width: 9; stroke-linecap: round; opacity: .35; }
+.wend { pointer-events: none; }
+.pend { fill: none; stroke: #111; stroke-width: 2; stroke-dasharray: 3 2; }
+.rubber { stroke-width: 3; stroke-dasharray: 6 4; pointer-events: none; }
+.selring, .selbox { fill: none; stroke: #111; stroke-width: 1.5; stroke-dasharray: 4 3; pointer-events: none; }
+@media (max-width: 760px) { .wwrap { grid-template-columns: minmax(0, 1fr); } .tray { position: static; flex-direction: row; flex-wrap: wrap; } .tray h4 { width: 100%; } }
 </style>
 </head>
 <body>
@@ -153,6 +206,7 @@ details[open] summary { margin-bottom: 8px; }
   <div class="kind" id="kind" role="tablist" aria-label="연습 종류">
     <button type="button" data-k="part">부품별 연습<small>센서·출력 하나씩 골라서</small></button>
     <button type="button" data-k="combo">조합 문제<small>부품 2개 → 5개 → 종합</small></button>
+    <button type="button" data-k="wire">배선 연습<small>끌어다 꽂고 선 연결</small></button>
   </div>
 
   <div class="chips" id="partChips" aria-label="부품 고르기"></div>
@@ -202,6 +256,47 @@ details[open] summary { margin-bottom: 8px; }
       </div>
       <button type="button" class="b" id="lRestart">처음부터</button>
     </div>
+  </div>
+
+  <div id="wireBox" hidden>
+    <div class="chips" id="wireChips" aria-label="배선 문제 종류"></div>
+    <section class="prob" id="wprob" style="margin-top:14px"></section>
+    <div class="wwrap" style="margin-top:14px">
+      <div class="wboard"><svg id="wsvg" viewBox="34 0 650 870" role="application" aria-label="브레드보드"></svg></div>
+      <div class="tray" id="tray">
+        <h4>LED</h4>
+        <button type="button" data-add="led:red"><i style="background:#e53935"></i>빨강 LED</button>
+        <button type="button" data-add="led:green"><i style="background:#43a047"></i>초록 LED</button>
+        <button type="button" data-add="led:yellow"><i style="background:#fdd835"></i>노랑 LED</button>
+        <h4>저항 (3개까지)</h4>
+        <button type="button" data-add="res">저항</button>
+        <h4>센서 · 출력</h4>
+        <button type="button" data-add="dht">온습도 센서 DHT22</button>
+        <button type="button" data-add="sr04">거리 센서 HC-SR04</button>
+        <button type="button" data-add="bh1750">조도 센서 BH1750</button>
+        <button type="button" data-add="lcd">LCD (I2C)</button>
+        <button type="button" data-add="servo">서보 모터</button>
+        <button type="button" data-add="drv">모터 드라이버 + DC 모터</button>
+        <h4>점퍼선</h4>
+        <div class="wnote">구멍 → 구멍 클릭 · 다음 색 <span id="wnext"></span></div>
+      </div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="btns">
+        <button type="button" class="b main" id="wCheck">채점하기</button>
+        <button type="button" class="b" id="wHint">힌트</button>
+        <button type="button" class="b" id="wSol">정답 배선 보기</button>
+        <button type="button" class="b" id="wNew">새 문제 →</button>
+      </div>
+      <div class="btns">
+        <button type="button" class="b" id="wRot">돌리기 R</button>
+        <button type="button" class="b" id="wDel">삭제 Del</button>
+        <button type="button" class="b" id="wUndo">되돌리기</button>
+        <button type="button" class="b" id="wClear">전체 지우기</button>
+      </div>
+    </div>
+    <div class="whelp" style="margin-top:8px"><span>부품: 오른쪽 상자에서 <b>끌어다</b> 보드에 놓기 · 꽂힌 부품도 끌어서 옮기기</span><span>LED·저항: <b>다리 끝</b>을 끌면 길이·방향 바꾸기</span><span>점퍼선: 구멍 하나 클릭 → 다른 구멍 클릭 (익스텐션 보드 핀도 가능)</span><span>선택 후 <kbd>R</kbd> 돌리기 · <kbd>Del</kbd> 삭제 · <kbd>Esc</kbd> 취소 · <kbd>Ctrl</kbd>+<kbd>Z</kbd></span></div>
+    <div id="wresult" style="margin-top:12px"></div>
   </div>
 
   <details>
@@ -707,10 +802,14 @@ function drawTop() {
   document.querySelectorAll("#kind button").forEach(b => b.classList.toggle("on", b.dataset.k === S.kind));
   document.querySelectorAll("#modes button").forEach(b => b.classList.toggle("on", b.dataset.m === S.mode));
   document.querySelectorAll("#inputs button").forEach(b => b.classList.toggle("on", b.dataset.i === S.input));
+  const isW = S.kind === "wire";
   $("#partChips").hidden = S.kind !== "part";
   $("#levels").hidden = S.kind !== "combo";
-  $("#allBox").hidden = S.input !== "all";
-  $("#lineBox").hidden = S.input !== "line";
+  $("#allBox").hidden = isW || S.input !== "all";
+  $("#lineBox").hidden = isW || S.input !== "line";
+  $("#wireBox").hidden = !isW;
+  document.querySelector(".ctl").hidden = isW;
+  $("#prob").hidden = isW; $("#aid").hidden = isW;
   const chips = $("#partChips"); chips.innerHTML = "";
   PART_LIST.forEach(p => {
     const b = document.createElement("button"); b.type = "button";
@@ -771,6 +870,7 @@ function drawAid() {
 }
 
 function newProblem() {
+  if (S.kind === "wire") { drawTop(); wireNew(); return; }
   cur = S.kind === "part" ? partProblem(S.part) : { ...generate(S.lv), kind: "combo", key: "c" + S.lv };
   revealed = false;
   $("#editor").value = ""; $("#result").innerHTML = ""; $("#reveal").textContent = "정답 보기";
@@ -956,6 +1056,607 @@ $("#lShow").addEventListener("click", () => {
 });
 $("#lFresh").addEventListener("click", newProblem);
 $("#lRestart").addEventListener("click", startInput);
+
+
+/* ===================================================================
+   7) 배선 연습 — 보드 모양 · 회로 계산 · 채점 · 정답 배치
+   =================================================================== */
+const W = {
+  BX: 336, BY: 46, G: 20,
+  HX1: 158, HX2: 182, HY: 52, HG: 26,
+  ROWS: 40,
+  SLOTS: [0, 1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14],
+  COLS: { a: 2, b: 3, c: 4, d: 5, e: 6, f: 8, g: 9, h: 10, i: 11, j: 12 },
+};
+const HDR = {
+  1: "3V3", 3: "SDA1", 5: "SCL1", 7: "GPIO4", 9: "GND", 11: "GPIO17", 13: "GPIO27", 15: "GPIO22", 17: "3V3", 19: "SPIMOSI",
+  21: "SPIMISO", 23: "SPISCLK", 25: "GND", 27: "ID_SD", 29: "GPIO5", 31: "GPIO6", 33: "GPIO13", 35: "GPIO19", 37: "GPIO26", 39: "GND",
+  2: "5V0", 4: "5V0", 6: "GND", 8: "TXD0", 10: "RXD0", 12: "GPIO18", 14: "GND", 16: "GPIO23", 18: "GPIO24", 20: "GND",
+  22: "GPIO25", 24: "SPICE0", 26: "SPICE1", 28: "ID_SC", 30: "GND", 32: "GPIO12", 34: "GND", 36: "GPIO16", 38: "GPIO20", 40: "GPIO21",
+};
+const PIN_OF = name => +Object.keys(HDR).find(n => HDR[n] === name);
+const netLabel = n => HDR[n] === "5V0" ? "5V" : HDR[n];
+const MODS = {
+  dht:    { name: "온습도 센서", pins: ["VCC", "DAT", "NC", "GND"] },
+  sr04:   { name: "거리 센서", pins: ["VCC", "Trig", "Echo", "GND"], dark: true },
+  bh1750: { name: "조도 센서", pins: ["VCC", "GND", "SCL", "SDA", "ADDR"], dark: true },
+  lcd:    { name: "LCD (I2C)", pins: ["GND", "VCC", "SDA", "SCL"], dark: true, depth: 96 },
+  servo:  { name: "서보", pins: ["GND", "VCC", "신호"], dark: true, legs: ["#6d4c41", "#e53935", "#fb8c00"] },
+  drv:    { name: "모터 드라이버", pins: ["B-IA", "B-IB", "GND", "VCC", "A-IA", "A-IB"], dark: true, depth: 60 },
+};
+const LED_NAME = { red: "빨강", green: "초록", yellow: "노랑" };
+const LED_FILL = { red: "#e53935", green: "#43a047", yellow: "#fdd835" };
+const RES_LIMIT = 3;   // 가진 저항 개수
+
+function isBB(x, y) { return W.SLOTS.includes(x) && y >= 1 && y <= W.ROWS; }
+function bbPx(x, y) { return [W.BX + x * W.G, W.BY + (y - 1) * W.G]; }
+function hdPx(n) { const i = Math.floor((n - 1) / 2); return [n % 2 ? W.HX1 : W.HX2, W.HY + i * W.HG]; }
+function holePx(h) { return h.t === "hd" ? hdPx(h.n) : bbPx(h.x, h.y); }
+function stripOf(h) {
+  if (h.t === "hd") return "H:" + netLabel(h.n);
+  if (h.x === 0 || h.x === 1 || h.x === 13 || h.x === 14) return "rail" + h.x;
+  return (h.x <= 6 ? "L" : "R") + h.y;
+}
+const MOD_DIRS = [[0, 1, -1], [0, 1, 1], [1, 0, -1], [1, 0, 1]];
+function modPins(p) { const [dx, dy] = MOD_DIRS[p.rot]; return MODS[p.type].pins.map((_, i) => ({ t: "bb", x: p.x + dx * i, y: p.y + dy * i })); }
+function partPins(p) { return p.type === "led" || p.type === "res" ? p.legs.map(l => ({ t: "bb", x: l.x, y: l.y })) : modPins(p); }
+function partValid(p) { return partPins(p).every(h => isBB(h.x, h.y)); }
+
+/* ---------- 회로(넷) 계산 ---------- */
+function nets(st) {
+  const par = {};
+  const f = a => { if (par[a] === undefined) par[a] = a; while (par[a] !== a) { par[a] = par[par[a]]; a = par[a]; } return a; };
+  const u = (a, b) => { a = f(a); b = f(b); if (a !== b) par[a] = b; };
+  st.wires.forEach(w => u(stripOf(w.a), stripOf(w.b)));
+  const net = h => f(stripOf(h));
+  const labels = {};
+  Object.keys(HDR).forEach(n => { const k = net({ t: "hd", n: +n }); (labels[k] = labels[k] || new Set()).add(netLabel(+n)); });
+  const plugged = new Set(st.wires.flatMap(w => [w.a, w.b]).filter(h => h.t === "hd").map(h => net(h)));
+  const has = (k, lab) => plugged.has(k) && labels[k] && labels[k].has(lab);
+  const names = k => plugged.has(k) && labels[k] ? [...labels[k]] : [];
+  return { net, has, names };
+}
+function circuit(st) {
+  const N = nets(st);
+  const res = st.parts.filter(p => p.type === "res").map(p => ({ p, a: N.net(p.legs[0]), b: N.net(p.legs[1]) }));
+  const viaR = (k, lab) => res.filter(r => (r.a === k && N.has(r.b, lab)) || (r.b === k && N.has(r.a, lab)));
+  const between = (k1, k2) => res.filter(r => (r.a === k1 && r.b === k2) || (r.a === k2 && r.b === k1));
+  const gpioOf = k => N.names(k).find(n => /^GPIO/.test(n));
+  return { ...N, res, viaR, between, gpioOf };
+}
+
+/* ---------- 채점 ---------- */
+const SIG = /^(GPIO\d+|SDA1|SCL1)$/;
+function checkShorts(C, st) {
+  const out = [], seen = new Set();
+  const holes = [...st.wires.flatMap(w => [w.a, w.b]), ...st.parts.flatMap(partPins)];
+  holes.forEach(h => {
+    const k = C.net(h); if (seen.has(k)) return; seen.add(k);
+    const n = C.names(k), pw = n.filter(x => ["3V3", "5V", "GND"].includes(x)), gp = n.filter(x => SIG.test(x));
+    if (pw.length >= 2) out.push(`전원 합선: ${pw.join(" · ")}끼리 이어졌습니다. 실제라면 매우 위험합니다.`);
+    else if (gp.length && pw.length) out.push(`${gp[0]} 핀이 ${pw[0]}에 바로 이어졌습니다 (합선).`);
+    else if (gp.length >= 2) out.push(`${gp.join(", ")} 핀끼리 서로 이어졌습니다.`);
+  });
+  return out;
+}
+function evalLED(C, led, tgt) {
+  const A = C.net(led.legs[0]), K = C.net(led.legs[1]);
+  if (A === K) return { ok: false, msg: "LED 두 다리가 같은 팀(같은 번호 줄의 같은 쪽)이라 전기가 LED를 지나지 않습니다. 다리를 서로 다른 번호 줄에 꽂으세요." };
+  const aD = C.has(A, tgt), aR = C.viaR(A, tgt), kD = C.has(K, "GND"), kR = C.viaR(K, "GND");
+  if ((aD && kR.length) || (aR.length && kD) || (aR.length && kR.length)) return { ok: true, msg: "" };
+  if (aD && kD) return { ok: false, msg: "저항이 없습니다. LED와 GPIO 사이(또는 GND 쪽)에 저항을 넣으세요." };
+  if ((C.has(K, tgt) || C.viaR(K, tgt).length) && (C.has(A, "GND") || C.viaR(A, "GND").length)) return { ok: false, msg: "LED 방향이 반대입니다. 긴 다리(+)가 GPIO 쪽, 짧은 다리(−)가 GND 쪽이어야 합니다." };
+  const r = C.res.find(r => r.a === A || r.b === A);
+  const other = C.gpioOf(A) || (r && C.gpioOf(r.a === A ? r.b : r.a));
+  if (other && other !== tgt) return { ok: false, msg: `긴 다리(+)가 ${other}에 이어졌습니다. 문제는 ${tgt}입니다.` };
+  const m = [];
+  if (!aD && !aR.length) m.push(`긴 다리(+) 쪽이 ${tgt}에 이어지지 않았습니다.`);
+  if (!kD && !kR.length) m.push("짧은 다리(−) 쪽이 GND에 이어지지 않았습니다.");
+  return { ok: false, msg: m.join(" ") || "연결을 다시 확인하세요." };
+}
+function checkLED(C, st, pin, color) {
+  const tgt = "GPIO" + pin, title = `${color ? LED_NAME[color] + " " : ""}LED → ${tgt}`;
+  const leds = st.parts.filter(p => p.type === "led" && (!color || p.color === color));
+  if (!leds.length) return { title, ok: false, msg: `${color ? LED_NAME[color] + " " : ""}LED가 보드에 없습니다.` };
+  let best = null;
+  for (const l of leds) { const r = evalLED(C, l, tgt); if (r.ok) return { title, ...r }; best = best || r; }
+  return { title, ...best };
+}
+function samePins(m, ks) {
+  const strips = modPins(m).map(stripOf);
+  if (new Set(strips).size < strips.length) return "부품 핀 두 개 이상이 같은 팀(같은 번호 줄의 같은 쪽)에 꽂혔습니다. 세로로 돌려(R) 핀마다 다른 번호 줄에 꽂으세요.";
+  const lab = MODS[m.type].pins;
+  for (let i = 0; i < ks.length; i++) for (let j = i + 1; j < ks.length; j++) {
+    if (ks[i] !== ks[j]) continue;
+    if (m.type === "drv" && [lab[i], lab[j]].every(x => ["GND", "A-IB"].includes(x))) continue;
+    if (m.type === "bh1750" && [lab[i], lab[j]].every(x => ["GND", "ADDR"].includes(x))) continue;
+    return `${lab[i]} 핀과 ${lab[j]} 핀이 서로 이어졌습니다. 합선입니다.`;
+  }
+  return "";
+}
+function getMod(st, type) { return st.parts.find(p => p.type === type); }
+function power(C, k, want, lab) {
+  if (C.has(k, want)) return "";
+  if (want === "3V3" && C.has(k, "5V")) return `${lab} 핀이 5V0에 연결됐습니다. 이 부품은 3V3에 연결하세요.`;
+  if (want === "5V" && C.has(k, "3V3")) return `${lab} 핀이 3V3에 있습니다. 이 부품은 5V0에 연결해야 제대로 동작합니다.`;
+  return `${lab} 핀이 ${want === "5V" ? "5V0" : want}에 이어지지 않았습니다.`;
+}
+function sig(C, k, want, lab) {
+  if (C.has(k, want)) return "";
+  const o = C.names(k).find(n => SIG.test(n));
+  return o ? `${lab} 핀이 ${o}에 이어졌습니다. ${want}에 연결해야 합니다.` : `${lab} 핀이 ${want}에 이어지지 않았습니다.`;
+}
+function checkDHT(C, st, pin) {
+  const tgt = "GPIO" + pin, title = `온습도 센서 → DAT ${tgt}`, m = getMod(st, "dht");
+  if (!m) return { title, ok: false, msg: "온습도 센서가 보드에 없습니다." };
+  const ks = modPins(m).map(C.net), [V, D, Nc, G] = ks;
+  const s = samePins(m, ks); if (s) return { title, ok: false, msg: s };
+  if (C.has(Nc, tgt)) return { title, ok: false, msg: `데이터선(${tgt})이 NC 핀에 연결됐습니다. NC는 '연결 안 함' 핀입니다.` };
+  const e = [power(C, V, "3V3", "VCC"), power(C, G, "GND", "GND"), sig(C, D, tgt, "DAT")].filter(Boolean);
+  if (e.length) return { title, ok: false, msg: e.join(" ") };
+  return { title, ok: true, msg: C.between(V, D).length ? "" : "VCC–DAT 사이 풀업 저항이 없습니다. 저항이 들어 있는 모듈형 센서면 괜찮고, 핀 4개짜리 센서면 저항을 넣으세요." };
+}
+function checkSR04(C, st) {
+  const title = "거리 센서 → Trig GPIO23 · Echo GPIO24", m = getMod(st, "sr04");
+  if (!m) return { title, ok: false, msg: "거리 센서가 보드에 없습니다." };
+  const ks = modPins(m).map(C.net), [V, T, E, G] = ks;
+  const s = samePins(m, ks); if (s) return { title, ok: false, msg: s };
+  const e = [power(C, V, "5V", "VCC"), power(C, G, "GND", "GND"), sig(C, T, "GPIO23", "Trig")].filter(Boolean);
+  if (C.has(E, "GPIO24")) e.push("Echo가 GPIO24에 바로 이어졌습니다. Echo는 5V로 나오므로 저항 2개로 낮춰서 연결하세요: Echo → 저항 → GPIO24 → 저항 → GND.");
+  else {
+    const r1 = C.res.find(r => (r.a === E && C.has(r.b, "GPIO24")) || (r.b === E && C.has(r.a, "GPIO24")));
+    if (!r1) e.push("Echo → 저항 → GPIO24 연결이 없습니다.");
+    else { const Nn = r1.a === E ? r1.b : r1.a; if (!C.viaR(Nn, "GND").filter(r => r !== r1).length) e.push("GPIO24 쪽에서 GND로 가는 두 번째 저항이 없습니다. 이게 있어야 전압이 낮아집니다."); }
+  }
+  return { title, ok: !e.length, msg: e.join(" ") };
+}
+function checkI2C(C, st, type, vcc) {
+  const nm = MODS[type].name, title = `${nm} → SDA1 · SCL1`, m = getMod(st, type);
+  if (!m) return { title, ok: false, msg: `${nm}가 보드에 없습니다.` };
+  const lab = MODS[type].pins, ks = modPins(m).map(C.net), K = Object.fromEntries(lab.map((l, i) => [l, ks[i]]));
+  const s = samePins(m, ks); if (s) return { title, ok: false, msg: s };
+  if (C.has(K.SDA, "SCL1") && C.has(K.SCL, "SDA1")) return { title, ok: false, msg: "SDA와 SCL이 서로 바뀌었습니다. SDA → SDA1, SCL → SCL1." };
+  const e = [power(C, K.VCC, vcc, "VCC"), power(C, K.GND, "GND", "GND"), sig(C, K.SDA, "SDA1", "SDA"), sig(C, K.SCL, "SCL1", "SCL")].filter(Boolean);
+  let warn = "";
+  if (type === "bh1750" && K.ADDR && C.has(K.ADDR, "3V3")) warn = "ADDR가 3V3에 연결돼 주소가 0x5C가 됩니다. 코드의 0x23과 맞추려면 비우거나 GND에.";
+  return { title, ok: !e.length, msg: e.join(" ") || warn };
+}
+function checkServo(C, st) {
+  const title = "서보 → 신호 GPIO26", m = getMod(st, "servo");
+  if (!m) return { title, ok: false, msg: "서보가 보드에 없습니다." };
+  const ks = modPins(m).map(C.net), [G, V, S] = ks;
+  const s = samePins(m, ks); if (s) return { title, ok: false, msg: s };
+  const e = [power(C, G, "GND", "갈색(GND)"), power(C, V, "5V", "빨강(VCC)"), sig(C, S, "GPIO26", "주황(신호)")].filter(Boolean);
+  return { title, ok: !e.length, msg: e.join(" ") };
+}
+function checkDrv(C, st) {
+  const title = "모터 드라이버 → A-IA GPIO18", m = getMod(st, "drv");
+  if (!m) return { title, ok: false, msg: "모터 드라이버가 보드에 없습니다." };
+  const ks = modPins(m).map(C.net), [, , G, V, IA, IB] = ks;
+  const s = samePins(m, ks); if (s) return { title, ok: false, msg: s };
+  const e = [power(C, V, "5V", "VCC"), power(C, G, "GND", "GND"), sig(C, IA, "GPIO18", "A-IA")].filter(Boolean);
+  if (C.has(IB, "GPIO18")) e.push("A-IA와 A-IB가 바뀌었습니다. A-IA → GPIO18, A-IB → GND.");
+  else if (!C.has(IB, "GND")) e.push("A-IB가 GND에 이어지지 않았습니다. 한 방향으로만 돌리려면 A-IB를 GND에 연결하세요.");
+  return { title, ok: !e.length, msg: e.join(" ") };
+}
+function gradeWiring(prob, st) {
+  const C = circuit(st), out = [];
+  prob.items.forEach(it => {
+    if (it.k === "led") out.push(checkLED(C, st, it.pin, null));
+    if (it.k === "led3") [["red", 17], ["green", 27], ["yellow", 22]].forEach(([c, p]) => out.push(checkLED(C, st, p, c)));
+    if (it.k === "dht") out.push(checkDHT(C, st, it.pin));
+    if (it.k === "dist") out.push(checkSR04(C, st));
+    if (it.k === "light") out.push(checkI2C(C, st, "bh1750", "3V3"));
+    if (it.k === "lcd") out.push(checkI2C(C, st, "lcd", "5V"));
+    if (it.k === "servo") out.push(checkServo(C, st));
+    if (it.k === "motor") out.push(checkDrv(C, st));
+  });
+  const nRes = st.parts.filter(p => p.type === "res").length;
+  if (nRes > RES_LIMIT) out.push({ title: "저항 개수", ok: false, msg: `저항을 ${nRes}개 썼습니다. 가진 저항은 ${RES_LIMIT}개입니다.` });
+  const shorts = checkShorts(C, st);
+  if (shorts.length) out.push({ title: "합선 검사", ok: false, msg: shorts.join(" ") });
+  return { rows: out, pass: out.every(r => r.ok) };
+}
+
+/* ---------- 문제 만들기 ---------- */
+const WTYPES = [
+  { k: "led", name: "LED 1개" }, { k: "led3", name: "LED 3개" }, { k: "dht", name: "온습도" }, { k: "dist", name: "거리" },
+  { k: "light", name: "조도" }, { k: "lcd", name: "LCD" }, { k: "servo", name: "서보" }, { k: "motor", name: "DC 모터" },
+  { k: "mix2", name: "조합 2개" }, { k: "mix3", name: "조합 3개" }, { k: "final", name: "종합 배선" },
+];
+const WCOST = { led: { r: 1, rows: 3 }, led3: { r: 3, rows: 9 }, dht: { r: 0, rows: 5 }, dist: { r: 2, rows: 5 }, light: { r: 0, rows: 6 }, lcd: { r: 0, rows: 5 }, servo: { r: 0, rows: 4 }, motor: { r: 0, rows: 7 } };
+const ALLK = Object.keys(WCOST);
+const WTEXT = {
+  led: it => `LED를 <b>GPIO${it.pin}</b>로 켤 수 있게 연결하세요.`,
+  led3: () => "빨강 LED → <b>GPIO17</b>, 초록 → <b>GPIO27</b>, 노랑 → <b>GPIO22</b>로 연결하세요.",
+  dht: it => `온습도 센서(DHT22) 데이터선을 <b>GPIO${it.pin}</b>에 연결하세요.`,
+  dist: () => "거리 센서(HC-SR04)를 Trig → <b>GPIO23</b>, Echo → <b>GPIO24</b>로 연결하세요.",
+  light: () => "조도 센서(BH1750)를 <b>I2C</b>(SDA · SCL)로 연결하세요.",
+  lcd: () => "LCD(I2C)를 <b>I2C</b>(SDA · SCL)로 연결하세요.",
+  servo: () => "서보(창문) 신호선을 <b>GPIO26</b>에 연결하세요.",
+  motor: () => "DC 모터 드라이버(L9110S)를 A-IA → <b>GPIO18</b>로 연결하세요.",
+};
+const WHINT = {
+  led: "LED: 긴 다리(+) → 저항 → GPIO, 짧은 다리(−) → GND. 두 다리는 다른 번호 줄에.",
+  led3: "LED 3개: LED마다 저항 하나씩(저항 3개 모두 사용). GND는 전원줄(−)에 모으면 편합니다.",
+  dht: "온습도: VCC → 3V3, GND → GND, DAT → GPIO, NC는 비우기. (핀 4개짜리면 VCC–DAT 사이 저항)",
+  dist: "거리: VCC → 5V0, GND → GND, Trig → GPIO23. Echo → 저항 → (GPIO24) → 저항 → GND.",
+  light: "조도: VCC → 3V3, GND → GND, SDA → SDA1, SCL → SCL1, ADDR은 비우기.",
+  lcd: "LCD: VCC → 5V0, GND → GND, SDA → SDA1, SCL → SCL1. (조도 센서와 SDA·SCL을 함께 써도 됨)",
+  servo: "서보: 갈색 GND → GND, 빨강 VCC → 5V0, 주황 신호 → GPIO26.",
+  motor: "드라이버: VCC → 5V0, GND → GND, A-IA → GPIO18, A-IB → GND. B-IA · B-IB는 비우기.",
+};
+function wireProblem(k) {
+  let ks;
+  if (k === "final") ks = ["led3", "dht", "light", "lcd", "motor"];
+  else if (k === "mix2" || k === "mix3") {
+    const n = k === "mix2" ? 2 : 3;
+    do { ks = sample(ALLK, n); } while (ks.reduce((a, x) => a + WCOST[x].r, 0) > RES_LIMIT || ks.reduce((a, x) => a + WCOST[x].rows, 0) > W.ROWS - 2);
+  } else ks = [k];
+  const used = new Set(); if (ks.includes("led3")) [17, 27, 22].forEach(p => used.add(p));
+  const free = pool => pick(pool.filter(p => !used.has(p)));
+  const items = ks.map(x => {
+    if (x === "led") { const p = free([17, 27, 22, 5, 6, 13, 19]); used.add(p); return { k: x, pin: p }; }
+    if (x === "dht") { const p = k === "final" ? 4 : free([4, 4, 5, 6]); used.add(p); return { k: x, pin: p }; }
+    return { k: x };
+  });
+  return { k, items, text: items.map(it => WTEXT[it.k](it)), hint: items.map(it => WHINT[it.k]), key: "w:" + k };
+}
+
+/* ---------- 정답 배치 ---------- */
+const WIRE_COLORS = ["#e53935", "#1e88e5", "#43a047", "#fb8c00", "#8e24aa", "#fdd835", "#00acc1", "#ec407a", "#7cb342", "#6d4c41", "#3949ab", "#ff7043"];
+function solution(prob) {
+  const st = { parts: [], wires: [] };
+  let row = 2, id = 1, ci = 0, railUsed = false;
+  const C = W.COLS, bb = (c, r) => ({ t: "bb", x: C[c], y: r }), hd = n => ({ t: "hd", n });
+  const col = () => WIRE_COLORS[ci++ % WIRE_COLORS.length];
+  const wire = (a, b, color) => st.wires.push({ id: id++, a, b, color: color || col() });
+  const BLK = "#212121", RED = "#e53935";
+  const toRail = r => { railUsed = true; wire(bb("j", r), { t: "bb", x: 14, y: r }, BLK); };
+  const res = legs => st.parts.push({ id: id++, type: "res", legs });
+  const mod = (type, rot, c) => st.parts.push({ id: id++, type, x: C[c], y: row, rot });
+  const led = (pin, color) => {
+    st.parts.push({ id: id++, type: "led", color, legs: [{ x: C.c, y: row }, { x: C.c, y: row + 1 }] });
+    res([{ x: C.e, y: row + 1 }, { x: C.f, y: row + 1 }]);
+    wire(hd(PIN_OF("GPIO" + pin)), bb("a", row)); toRail(row + 1); row += 3;
+  };
+  const needR = prob.items.reduce((a, it) => a + WCOST[it.k].r, 0);
+  prob.items.forEach(it => {
+    if (it.k === "led") led(it.pin, "red");
+    if (it.k === "led3") { led(17, "red"); led(27, "green"); led(22, "yellow"); }
+    if (it.k === "dht") {
+      mod("dht", 1, "e");
+      if (needR < RES_LIMIT) res([{ x: C.c, y: row }, { x: C.c, y: row + 1 }]);
+      wire(hd(1), bb("a", row), RED); wire(hd(PIN_OF("GPIO" + it.pin)), bb("a", row + 1)); wire(bb("a", row + 3), hd(9), BLK);
+      row += 5;
+    }
+    if (it.k === "dist") {
+      mod("sr04", 0, "a");
+      res([{ x: C.e, y: row + 2 }, { x: C.f, y: row + 2 }]); res([{ x: C.h, y: row + 2 }, { x: C.h, y: row + 3 }]);
+      wire(bb("e", row), hd(2), RED); wire(bb("e", row + 1), hd(16));
+      wire(bb("e", row + 3), bb("f", row + 3), BLK); wire(bb("j", row + 2), hd(18)); toRail(row + 3);
+      row += 5;
+    }
+    if (it.k === "light") {
+      mod("bh1750", 0, "a");
+      wire(bb("e", row), hd(17), RED); wire(bb("e", row + 1), hd(25), BLK); wire(bb("e", row + 2), hd(5)); wire(bb("e", row + 3), hd(3));
+      row += 6;
+    }
+    if (it.k === "lcd") {
+      mod("lcd", 0, "a");
+      wire(bb("e", row), hd(39), BLK); wire(bb("e", row + 1), hd(4), RED); wire(bb("e", row + 2), hd(3)); wire(bb("e", row + 3), hd(5));
+      row += 5;
+    }
+    if (it.k === "servo") {
+      mod("servo", 0, "a");
+      wire(bb("e", row), hd(30), BLK); wire(bb("e", row + 1), hd(2), RED); wire(bb("e", row + 2), hd(37));
+      row += 4;
+    }
+    if (it.k === "motor") {
+      mod("drv", 0, "a");
+      wire(bb("e", row + 2), hd(14), BLK); wire(bb("e", row + 3), hd(4), RED); wire(bb("e", row + 4), hd(12)); wire(bb("e", row + 5), hd(20), BLK);
+      row += 7;
+    }
+  });
+  if (railUsed) wire(hd(6), { t: "bb", x: 14, y: 1 }, BLK);
+  return st;
+}
+
+/* ===================================================================
+   8) 배선 연습 — 화면과 조작
+   =================================================================== */
+let WS = { parts: [], wires: [] }, wprob = null, wsel = null, wpend = null, wdrag = null, wundo = [], wcolor = 0, wsaved = null, whint = false;
+const wsvg = document.getElementById("wsvg");
+const SVGNS = "http://www.w3.org/2000/svg";
+const clone = o => JSON.parse(JSON.stringify(o));
+function wPush() { wundo.push(clone(WS)); if (wundo.length > 60) wundo.shift(); }
+let nextId = 1000;
+
+/* ---------- 배경 (보드) ---------- */
+function bgSVG() {
+  const s = [];
+  // 익스텐션 보드
+  s.push(`<rect class="hdboard" x="${W.HX1 - 116}" y="${W.HY - 30}" width="224" height="${19 * W.HG + 58}" rx="6"/>`);
+  s.push(`<text class="hdcap" x="${(W.HX1 + W.HX2) / 2}" y="${W.HY - 12}" text-anchor="middle">익스텐션 보드</text>`);
+  for (let n = 1; n <= 40; n++) {
+    const [x, y] = hdPx(n), L = HDR[n], key = /GND/.test(L) ? "g" : /3V3|5V0/.test(L) ? "p" : /^GPIO/.test(L) ? "io" : "o";
+    s.push(`<rect class="hdpin ${key}" x="${x - 6}" y="${y - 6}" width="12" height="12" rx="2"/>`);
+    s.push(`<text class="hdlab ${key}" x="${n % 2 ? x - 12 : x + 12}" y="${y + 4}" text-anchor="${n % 2 ? "end" : "start"}">${L}</text>`);
+  }
+  // 브레드보드
+  const x0 = W.BX - 14, y0 = W.BY - 30, w = 14 * W.G + 28, h = (W.ROWS - 1) * W.G + 46;
+  s.push(`<rect class="bboard" x="${x0}" y="${y0}" width="${w}" height="${h}" rx="6"/>`);
+  s.push(`<rect class="bbgap" x="${W.BX + 7 * W.G - 7}" y="${y0 + 4}" width="14" height="${h - 8}"/>`);
+  [[0, "−", "rm"], [1, "+", "rp"], [13, "+", "rp"], [14, "−", "rm"]].forEach(([sl, t, c]) => {
+    const [x] = bbPx(sl, 1);
+    s.push(`<line class="${c}" x1="${x}" y1="${W.BY - 8}" x2="${x}" y2="${W.BY + (W.ROWS - 1) * W.G + 8}"/>`);
+    s.push(`<text class="bblab ${c}t" x="${x}" y="${W.BY - 14}" text-anchor="middle">${t}</text>`);
+  });
+  Object.entries(W.COLS).forEach(([c, sl]) => { const [x] = bbPx(sl, 1); s.push(`<text class="bblab" x="${x}" y="${W.BY - 14}" text-anchor="middle">${c}</text>`); });
+  for (let r = 1; r <= W.ROWS; r++) {
+    const [gx, y] = bbPx(7, r);
+    if (r % 5 === 0 || r === 1) s.push(`<text class="bbnum" x="${gx}" y="${y + 3}" text-anchor="middle">${r}</text>`);
+    W.SLOTS.forEach(sl => { const [x] = bbPx(sl, r); s.push(`<rect class="hole" x="${x - 3.5}" y="${y - 3.5}" width="7" height="7" rx="1.5"/>`); });
+  }
+  return s.join("");
+}
+const BG = bgSVG();
+
+/* ---------- 부품 그리기 ---------- */
+function drawPart(p) {
+  const sel = wsel && wsel.kind === "part" && wsel.id === p.id;
+  const g = [];
+  if (p.type === "led" || p.type === "res") {
+    const [a, b] = p.legs.map(l => bbPx(l.x, l.y));
+    const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+    const ux = dx / L, uy = dy / L, nx = -uy, ny = ux, ang = Math.atan2(dy, dx) * 180 / Math.PI;
+    if (p.type === "led") {
+      const bx = mx + nx * -11, by = my + ny * -11;
+      g.push(`<line class="leg" x1="${a[0]}" y1="${a[1]}" x2="${bx - ux * 4}" y2="${by - uy * 4}"/><line class="leg" x1="${b[0]}" y1="${b[1]}" x2="${bx + ux * 4}" y2="${by + uy * 4}"/>`);
+      g.push(`<circle class="ledbody" cx="${bx}" cy="${by}" r="9" fill="${LED_FILL[p.color]}" data-part="${p.id}"/>`);
+      g.push(`<text class="plus" x="${a[0] + nx * -6 - ux * 9}" y="${a[1] + ny * -6 - uy * 9 + 4}" text-anchor="middle">+</text>`);
+    } else {
+      const bands = ["#6d4c41", "#212121", "#d32f2f"];
+      g.push(`<line class="leg" x1="${a[0]}" y1="${a[1]}" x2="${b[0]}" y2="${b[1]}"/>`);
+      g.push(`<g transform="translate(${mx} ${my}) rotate(${ang})"><rect class="resbody" x="-12" y="-5" width="24" height="10" rx="4" data-part="${p.id}"/>${bands.map((c, i) => `<rect x="${-7 + i * 5}" y="-5" width="2.5" height="10" fill="${c}" pointer-events="none"/>`).join("")}</g>`);
+    }
+    p.legs.forEach((l, i) => { const [x, y] = bbPx(l.x, l.y); g.push(`<circle class="leghandle" cx="${x}" cy="${y}" r="5" data-part="${p.id}" data-leg="${i}"/>`); });
+    if (sel) g.push(`<circle class="selring" cx="${mx}" cy="${my}" r="${L / 2 + 14}"/>`);
+  } else {
+    const pins = modPins(p).map(h => bbPx(h.x, h.y)), [dx, dy, side] = MOD_DIRS[p.rot];
+    const nx = dy * side * -1 || 0, ny = dx * side || 0;           // 몸통 방향
+    const px = dx === 0 ? side : 0, py = dy === 0 ? side : 0;
+    const first = pins[0], last = pins[pins.length - 1];
+    const off = 14, depth = MODS[p.type].depth || 56, M = MODS[p.type];
+    let x, y, w, h;
+    if (dx === 0) { w = depth; h = last[1] - first[1] + 24; x = px > 0 ? first[0] + off : first[0] - off - depth; y = first[1] - 12; }
+    else { h = depth; w = last[0] - first[0] + 24; y = py > 0 ? first[1] + off : first[1] - off - depth; x = first[0] - 12; }
+    pins.forEach(([qx, qy], i) => g.push(`<line class="leg" ${M.legs ? `style="stroke:${M.legs[i]};stroke-width:3.5"` : ""} x1="${qx}" y1="${qy}" x2="${dx === 0 ? (px > 0 ? x : x + w) : qx}" y2="${dx === 0 ? qy : (py > 0 ? y : y + h)}"/>`));
+    g.push(`<rect class="mod ${p.type}" x="${x}" y="${y}" width="${w}" height="${h}" rx="5" data-part="${p.id}"/>`);
+    const ex = px > 0 ? x + w * 0.64 : x + w * 0.36, ey = py > 0 ? y + h * 0.64 : y + h * 0.36, cxm = x + w / 2, cym = y + h / 2;
+    const deco = (sx, sy) => {   // 몸통 가운데 쪽 꾸밈 위치
+      return dx === 0 ? [ex, sy] : [sx, ey];
+    };
+    if (p.type === "sr04") {
+      if (dx === 0) g.push(`<circle class="eye" cx="${ex}" cy="${y + h * 0.28}" r="11" pointer-events="none"/><circle class="eye" cx="${ex}" cy="${y + h * 0.72}" r="11" pointer-events="none"/>`);
+      else g.push(`<circle class="eye" cx="${x + w * 0.28}" cy="${ey}" r="11" pointer-events="none"/><circle class="eye" cx="${x + w * 0.72}" cy="${ey}" r="11" pointer-events="none"/>`);
+    } else if (p.type === "dht") {
+      for (let i = 0; i < 12; i++) g.push(`<rect class="grill" x="${x + 8 + (i % 3) * 12}" y="${y + 8 + Math.floor(i / 3) * 10}" width="7" height="5" pointer-events="none"/>`);
+    } else if (p.type === "bh1750") {
+      const [cx, cy] = deco(cxm, cym); g.push(`<rect x="${cx - 8}" y="${cy - 6}" width="16" height="12" fill="#111" pointer-events="none"/>`);
+    } else if (p.type === "lcd") {
+      const sw = dx === 0 ? w - 44 : w - 24, sh = dx === 0 ? h - 16 : h - 44;
+      const sx = dx === 0 ? (px > 0 ? x + 38 : x + 6) : x + 12, sy = dx === 0 ? y + 8 : (py > 0 ? y + 36 : y + 8);
+      g.push(`<rect x="${sx}" y="${sy}" width="${sw}" height="${sh}" rx="2" fill="#7bd389" pointer-events="none"/><text x="${sx + sw / 2}" y="${sy + sh / 2 + 4}" text-anchor="middle" font-family="monospace" font-size="11" fill="#123" pointer-events="none">Hello</text>`);
+    } else if (p.type === "servo") {
+      const [cx, cy] = deco(cxm, cym); g.push(`<circle cx="${cx}" cy="${cy}" r="8" fill="#fff" stroke="#333" pointer-events="none"/><rect x="${cx - 3}" y="${cy - 18}" width="6" height="36" rx="3" fill="#fff" stroke="#333" pointer-events="none"/>`);
+    } else if (p.type === "drv") {
+      const [cx, cy] = deco(cxm, cym); g.push(`<rect x="${cx - 8}" y="${cy - 10}" width="16" height="20" fill="#111" pointer-events="none"/>`);
+      const mx2 = dx === 0 ? (px > 0 ? x + w + 6 : x - 46) : cxm - 20, my2 = dx === 0 ? cym - 20 : (py > 0 ? y + h + 6 : y - 46);
+      g.push(`<rect x="${mx2}" y="${my2}" width="40" height="40" rx="6" fill="#f4c20d" stroke="#8a6d00" pointer-events="none"/><circle cx="${mx2 + 20}" cy="${my2 + 20}" r="12" fill="#222" pointer-events="none"/><text x="${mx2 + 20}" y="${my2 + 54}" text-anchor="middle" font-size="9.5" fill="#555" pointer-events="none">모터</text>`);
+    }
+    MODS[p.type].pins.forEach((lab, i) => {
+      const [qx, qy] = pins[i];
+      const tx = dx === 0 ? (px > 0 ? x + 4 : x + w - 4) : qx, ty = dx === 0 ? qy + 3.5 : (py > 0 ? y + 12 : y + h - 5);
+      g.push(`<text class="modlab${M.dark ? " lt" : ""}" x="${tx}" y="${ty}" text-anchor="${dx === 0 ? (px > 0 ? "start" : "end") : "middle"}" pointer-events="none">${lab}</text>`);
+    });
+    g.push(`<text class="modname" x="${x + w / 2}" y="${dx === 0 ? y - 4 : (py > 0 ? y + h + 12 : y - 4)}" text-anchor="middle" pointer-events="none">${MODS[p.type].name}</text>`);
+    if (sel) g.push(`<rect class="selbox" x="${x - 5}" y="${y - 5}" width="${w + 10}" height="${h + 10}" rx="7"/>`);
+  }
+  return g.join("");
+}
+function drawWire(w) {
+  const [ax, ay] = holePx(w.a), [bx, by] = holePx(w.b);
+  const mx = (ax + bx) / 2, my = (ay + by) / 2, L = Math.hypot(bx - ax, by - ay) || 1;
+  const bend = Math.min(36, L * 0.18), cx = mx + (-(by - ay) / L) * bend, cy = my + ((bx - ax) / L) * bend;
+  const d = `M${ax} ${ay} Q${cx} ${cy} ${bx} ${by}`;
+  const sel = wsel && wsel.kind === "wire" && wsel.id === w.id;
+  return `${sel ? `<path class="wsel" d="${d}"/>` : ""}<path class="wire" d="${d}" stroke="${w.color}" data-wire="${w.id}"/><circle cx="${ax}" cy="${ay}" r="4" fill="${w.color}" class="wend"/><circle cx="${bx}" cy="${by}" r="4" fill="${w.color}" class="wend"/>`;
+}
+function wRender(pointer) {
+  let s = BG;
+  WS.parts.forEach(p => { s += drawPart(p); });
+  WS.wires.forEach(w => { s += drawWire(w); });
+  if (wpend) {
+    const [x, y] = holePx(wpend);
+    s += `<circle class="pend" cx="${x}" cy="${y}" r="8"/>`;
+    if (pointer) s += `<line class="rubber" x1="${x}" y1="${y}" x2="${pointer[0]}" y2="${pointer[1]}" stroke="${WIRE_COLORS[wcolor % WIRE_COLORS.length]}"/>`;
+  }
+  wsvg.innerHTML = s;
+  document.getElementById("wnext").style.background = WIRE_COLORS[wcolor % WIRE_COLORS.length];
+}
+
+/* ---------- 좌표 ---------- */
+function svgPt(e) { const p = wsvg.createSVGPoint(); p.x = e.clientX; p.y = e.clientY; const m = wsvg.getScreenCTM(); if (!m) return null; const q = p.matrixTransform(m.inverse()); return [q.x, q.y]; }
+function overSvg(e) { const r = wsvg.getBoundingClientRect(); return e.clientX >= r.left && e.clientX <= r.right && e.clientY >= r.top && e.clientY <= r.bottom; }
+function nearestHole(pt, bbOnly) {
+  if (!pt) return null;
+  if (!bbOnly) for (let n = 1; n <= 40; n++) { const [x, y] = hdPx(n); if (Math.hypot(pt[0] - x, pt[1] - y) < 12) return { t: "hd", n }; }
+  const x = Math.round((pt[0] - W.BX) / W.G), y = Math.round((pt[1] - W.BY) / W.G) + 1;
+  if (!isBB(x, y)) return null;
+  const [hx, hy] = bbPx(x, y);
+  return Math.hypot(pt[0] - hx, pt[1] - hy) < 13 ? { t: "bb", x, y } : null;
+}
+const gridOf = pt => [Math.round((pt[0] - W.BX) / W.G), Math.round((pt[1] - W.BY) / W.G) + 1];
+
+/* ---------- 마우스 / 터치 ---------- */
+function anchorOf(p) { return p.type === "led" || p.type === "res" ? p.legs[0] : { x: p.x, y: p.y }; }
+function moveTo(p, ax, ay) {
+  const q = clone(p);
+  if (q.legs) { const dx = ax - q.legs[0].x, dy = ay - q.legs[0].y; q.legs.forEach(l => { l.x += dx; l.y += dy; }); }
+  else { q.x = ax; q.y = ay; }
+  return q;
+}
+wsvg.addEventListener("pointerdown", e => {
+  const pt = svgPt(e); if (!pt) return;
+  const t = e.target, pid = t.dataset && t.dataset.part, wid = t.dataset && t.dataset.wire;
+  if (pid) {
+    const p = WS.parts.find(x => x.id == pid);
+    wsel = { kind: "part", id: p.id }; wpend = null;
+    const leg = t.dataset.leg;
+    const [gx, gy] = gridOf(pt), a = anchorOf(p);
+    wdrag = { kind: leg != null ? "leg" : "move", id: p.id, leg: leg != null ? +leg : null, off: [gx - a.x, gy - a.y], before: clone(WS), moved: false };
+    wsvg.setPointerCapture(e.pointerId); e.preventDefault(); wRender(); return;
+  }
+  if (wid) { wsel = { kind: "wire", id: +wid }; wpend = null; wRender(); return; }
+  const h = nearestHole(pt, false);
+  if (!h) { wsel = null; wpend = null; wRender(); return; }
+  if (!wpend) { wpend = h; wsel = null; wRender(pt); return; }
+  if (stripOf(h) === stripOf(wpend) && JSON.stringify(h) === JSON.stringify(wpend)) { wpend = null; wRender(); return; }
+  wPush();
+  WS.wires.push({ id: nextId++, a: wpend, b: h, color: WIRE_COLORS[wcolor++ % WIRE_COLORS.length] });
+  wpend = null; wRender();
+});
+wsvg.addEventListener("pointermove", e => {
+  const pt = svgPt(e); if (!pt) return;
+  if (!wdrag) { if (wpend) wRender(pt); return; }
+  const i = WS.parts.findIndex(x => x.id === wdrag.id); if (i < 0) return;
+  const p = WS.parts[i], [gx, gy] = gridOf(pt);
+  let q;
+  if (wdrag.kind === "leg") {
+    q = clone(p); q.legs[wdrag.leg] = { x: gx, y: gy };
+    const o = q.legs[1 - wdrag.leg], d = Math.hypot(q.legs[0].x - q.legs[1].x, q.legs[0].y - q.legs[1].y);
+    if (d < 1 || d > (p.type === "led" ? 3.2 : 5.5) || (o.x === gx && o.y === gy)) return;
+  } else q = moveTo(p, gx - wdrag.off[0], gy - wdrag.off[1]);
+  if (partValid(q) && JSON.stringify(q) !== JSON.stringify(p)) { WS.parts[i] = q; wdrag.moved = true; wRender(); }
+});
+function endDrag() { if (wdrag && wdrag.moved) { wundo.push(wdrag.before); } wdrag = null; }
+wsvg.addEventListener("pointerup", endDrag);
+wsvg.addEventListener("pointercancel", endDrag);
+
+/* 부품 상자에서 끌어오기 */
+let trayDrag = null;
+document.getElementById("tray").addEventListener("pointerdown", e => {
+  const b = e.target.closest("[data-add]"); if (!b) return;
+  e.preventDefault();
+  const [type, v] = b.dataset.add.split(":");
+  trayDrag = { type, v, placed: null, before: clone(WS) };
+  b.setPointerCapture && b.setPointerCapture(e.pointerId);
+});
+function newPart(type, v, gx, gy) {
+  if (type === "led") return { id: nextId++, type, color: v, legs: [{ x: gx, y: gy }, { x: gx, y: gy + 1 }] };
+  if (type === "res") return { id: nextId++, type, legs: [{ x: gx, y: gy }, { x: gx + 2, y: gy }] };
+  return { id: nextId++, type, x: gx, y: gy, rot: 0 };
+}
+document.addEventListener("pointermove", e => {
+  if (!trayDrag) return;
+  if (!overSvg(e)) { if (trayDrag.placed) { WS.parts = WS.parts.filter(p => p.id !== trayDrag.placed); trayDrag.placed = null; wRender(); } return; }
+  const pt = svgPt(e), [gx, gy] = gridOf(pt);
+  let q = newPart(trayDrag.type, trayDrag.v, gx, gy);
+  if (!partValid(q) && trayDrag.type !== "led" && trayDrag.type !== "res") { q.rot = 1; if (!partValid(q)) return; }
+  if (!partValid(q)) return;
+  if (trayDrag.placed) { q.id = trayDrag.placed; q.rot = q.rot; WS.parts = WS.parts.map(p => p.id === q.id ? q : p); }
+  else { trayDrag.placed = q.id; WS.parts.push(q); }
+  wsel = { kind: "part", id: q.id }; wRender();
+});
+document.addEventListener("pointerup", () => {
+  if (!trayDrag) return;
+  if (trayDrag.placed) wundo.push(trayDrag.before);
+  trayDrag = null;
+});
+
+/* ---------- 버튼 · 키 ---------- */
+function wRotate() {
+  if (!wsel || wsel.kind !== "part") return;
+  const i = WS.parts.findIndex(p => p.id === wsel.id), p = WS.parts[i];
+  let q = clone(p);
+  if (q.legs) { const [a, b] = q.legs, dx = b.x - a.x, dy = b.y - a.y; q.legs[1] = { x: a.x - dy, y: a.y + dx }; }
+  else q.rot = (q.rot + 1) % 4;
+  for (let k = 0; k < 4 && !partValid(q); k++) { if (q.legs) { const [a, b] = q.legs, dx = b.x - a.x, dy = b.y - a.y; q.legs[1] = { x: a.x - dy, y: a.y + dx }; } else q.rot = (q.rot + 1) % 4; }
+  if (!partValid(q)) return;
+  wPush(); WS.parts[i] = q; wRender();
+}
+function wDelete() {
+  if (!wsel) return;
+  wPush();
+  if (wsel.kind === "part") WS.parts = WS.parts.filter(p => p.id !== wsel.id);
+  else WS.wires = WS.wires.filter(w => w.id !== wsel.id);
+  wsel = null; wRender();
+}
+function wUndo() { if (!wundo.length) return; WS = wundo.pop(); wsel = null; wpend = null; wRender(); }
+document.getElementById("wRot").addEventListener("click", wRotate);
+document.getElementById("wDel").addEventListener("click", wDelete);
+document.getElementById("wUndo").addEventListener("click", wUndo);
+document.getElementById("wClear").addEventListener("click", () => { if (!WS.parts.length && !WS.wires.length) return; wPush(); WS = { parts: [], wires: [] }; wsel = null; wpend = null; wRender(); document.getElementById("wresult").innerHTML = ""; });
+document.addEventListener("keydown", e => {
+  if (S.kind !== "wire") return;
+  if (["INPUT", "TEXTAREA"].includes(document.activeElement.tagName)) return;
+  if (e.key === "r" || e.key === "R") { e.preventDefault(); wRotate(); }
+  if (e.key === "Delete" || e.key === "Backspace") { e.preventDefault(); wDelete(); }
+  if (e.key === "Escape") { wpend = null; wsel = null; wRender(); }
+  if ((e.ctrlKey || e.metaKey) && e.key === "z") { e.preventDefault(); wUndo(); }
+});
+
+/* ---------- 문제 · 채점 · 정답 ---------- */
+function wDrawChips() {
+  const box = document.getElementById("wireChips"); box.innerHTML = "";
+  WTYPES.forEach(t => {
+    const b = document.createElement("button"); b.type = "button"; b.className = S.wtype === t.k ? "on" : "";
+    b.innerHTML = `${t.name}<i>${st("w:" + t.k).solved}</i>`;
+    b.addEventListener("click", () => { S.wtype = t.k; save(); wireNew(); });
+    box.appendChild(b);
+  });
+}
+function wDrawProb() {
+  const box = document.getElementById("wprob");
+  box.innerHTML = `<div class="tag">배선 연습 · ${WTYPES.find(t => t.k === wprob.k).name}</div>
+    <h2>부품을 끌어다 꽂고, 구멍 두 개를 눌러 점퍼선으로 연결하세요.</h2>
+    <ol class="reqs">${wprob.text.map(t => `<li>${t}</li>`).join("")}</ol>
+    <div class="hint" id="whintBox"${whint ? "" : " hidden"}>${wprob.hint.map(h => `<div>· ${h}</div>`).join("")}</div>`;
+}
+function wireNew() {
+  if (!S.wtype) S.wtype = "led";
+  wprob = wireProblem(S.wtype); WS = { parts: [], wires: [] }; wundo = []; wsel = null; wpend = null; wsaved = null; whint = false; wcolor = 0;
+  document.getElementById("wSol").textContent = "정답 배선 보기";
+  document.getElementById("wresult").innerHTML = "";
+  wDrawChips(); wDrawProb(); wRender();
+}
+document.getElementById("wHint").addEventListener("click", () => { whint = !whint; document.getElementById("whintBox").hidden = !whint; });
+document.getElementById("wNew").addEventListener("click", wireNew);
+document.getElementById("wSol").addEventListener("click", () => {
+  const b = document.getElementById("wSol");
+  if (wsaved) { WS = wsaved; wsaved = null; b.textContent = "정답 배선 보기"; }
+  else { wsaved = WS; WS = solution(wprob); b.textContent = "내 배선으로 돌아가기"; st(wprob.key).streak = 0; save(); }
+  wsel = null; wpend = null; wRender();
+});
+document.getElementById("wCheck").addEventListener("click", () => {
+  const r = gradeWiring(wprob, WS);
+  const box = document.getElementById("wresult");
+  const clean = !wsaved && !whint;
+  let s = st(wprob.key);
+  if (!wsaved && !(r.pass && wprob.done)) { s = wRecord(r.pass, clean); if (r.pass) wprob.done = true; }
+  box.innerHTML = `<div class="result${r.pass ? " pass" : ""}"><h3>${r.pass ? "✓ 회로 완성! 실제로도 동작하는 배선입니다" : "✗ 아직 고칠 곳이 있습니다"}</h3>
+    <ul class="wrows">${r.rows.map(x => `<li class="${x.ok ? "ok" : "bad"}"><b>${x.ok ? "✓" : "✗"} ${x.title}</b>${x.msg ? `<span>${x.ok ? "⚠ " : ""}${x.msg}</span>` : ""}</li>`).join("")}</ul>
+    ${r.pass ? `<div class="next-hint">연속 정답 ${s.streak}개.${wsaved ? " (정답 배선 화면이라 기록은 남지 않습니다)" : ""} <button type="button" class="b main" id="wNext">다음 문제 →</button></div>` : ""}</div>`;
+  const nx = document.getElementById("wNext"); if (nx) nx.addEventListener("click", wireNew);
+});
+function wRecord(pass, clean) {
+  const s = st(wprob.key);
+  if (pass) { s.solved++; if (clean) { s.streak++; s.best = Math.max(s.best, s.streak); } }
+  else s.streak = 0;
+  save(); drawTop(); wDrawChips();
+  return s;
+}
 
 newProblem();
 </script>
