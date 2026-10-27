@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>GPIO 무한 코드 연습</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans+KR:wght@400;600;700&display=swap">
+<style>
+/* 흑백 · 한 칸 레이아웃: 단계 선택 → 문제 → 편집기 → 채점 결과 */
+:root {
+  --bg: #ffffff; --fg: #111111; --muted: #6b6b6b; --line: #d9d9d9; --soft: #f2f2f2; --strong: #000000;
+  --code-bg: #f5f5f5; --code-fg: #111111; --code-dim: #8c8c8c; --mark: #e2e2e2;
+  --sans: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --mono: "IBM Plex Mono", "D2Coding", "Consolas", ui-monospace, monospace;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0e0e0e; --fg: #ededed; --muted: #9a9a9a; --line: #2e2e2e; --soft: #181818; --strong: #ffffff;
+    --code-bg: #161616; --code-fg: #ededed; --code-dim: #7a7a7a; --mark: #2b2b2b; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0e0e0e; --fg: #ededed; --muted: #9a9a9a; --line: #2e2e2e; --soft: #181818; --strong: #ffffff;
+  --code-bg: #161616; --code-fg: #ededed; --code-dim: #7a7a7a; --mark: #2b2b2b; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--fg); font-family: var(--sans); font-size: 15px; line-height: 1.6;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 24px 64px; }
+[hidden] { display: none !important; }
+.page { max-width: 920px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 8px 20px; border-bottom: 2px solid var(--strong); padding-bottom: 12px; }
+header h1 { margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -.3px; }
+header .score { font-family: var(--mono); font-size: 13px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.levels { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.lvbtn { font: inherit; text-align: left; background: var(--bg); color: var(--fg); border: 1.5px solid var(--line); padding: 8px 10px; cursor: pointer; display: flex; flex-direction: column; gap: 0; }
+.lvbtn:hover { border-color: var(--strong); }
+.lvbtn:focus-visible { outline: 2px solid var(--strong); outline-offset: 2px; }
+.lvbtn.on { background: var(--strong); color: var(--bg); border-color: var(--strong); }
+.lvbtn b { font-size: 14px; }
+.lvbtn span { font-size: 12px; opacity: .75; }
+.lvbtn i { font-style: normal; font-family: var(--mono); font-size: 11.5px; opacity: .75; font-variant-numeric: tabular-nums; }
+
+.row { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.seg { display: inline-flex; border: 1.5px solid var(--strong); }
+.seg button { font: inherit; font-size: 13px; border: 0; background: var(--bg); color: var(--fg); padding: 5px 12px; cursor: pointer; }
+.seg button + button { border-left: 1.5px solid var(--strong); }
+.seg button.on { background: var(--strong); color: var(--bg); }
+.seg button:focus-visible { outline: 2px solid var(--strong); outline-offset: 2px; }
+.small { font-size: 13px; color: var(--muted); }
+
+.prob { border: 1.5px solid var(--strong); padding: 18px 20px; display: flex; flex-direction: column; gap: 12px; }
+.prob .tag { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.prob h2 { margin: 0; font-size: 19px; line-height: 1.45; }
+.parts { display: flex; flex-wrap: wrap; gap: 6px; }
+.parts span { font-size: 12.5px; border: 1px solid var(--strong); padding: 1px 8px; }
+.reqs { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 4px; }
+.reqs code, .pins code, .note code { font-family: var(--mono); font-size: 13px; background: var(--soft); padding: 0 4px; }
+table.pins { border-collapse: collapse; font-size: 13px; width: 100%; }
+.pins td { border-top: 1px solid var(--line); padding: 4px 8px 4px 0; vertical-align: top; }
+.pins td:first-child { width: 34%; color: var(--muted); }
+.tablewrap { overflow-x: auto; }
+
+.code { margin: 0; background: var(--code-bg); color: var(--code-fg); font-family: var(--mono); font-size: 13.5px; line-height: 1.7; padding: 12px 16px; overflow-x: auto; white-space: pre; border-left: 3px solid var(--strong); }
+.code.ghost { color: var(--code-dim); max-height: 340px; overflow-y: auto; }
+.snips { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 10px; }
+.snip { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.snip b { font-size: 13px; }
+.snip .code { font-size: 12.5px; }
+
+textarea.ed { width: 100%; min-height: 320px; resize: vertical; background: var(--bg); color: var(--fg); font-family: var(--mono); font-size: 14.5px; line-height: 1.7; border: 1.5px solid var(--strong); padding: 12px 16px; tab-size: 4; }
+textarea.ed:focus { outline: 3px solid var(--mark); outline-offset: 0; }
+
+.btns { display: flex; flex-wrap: wrap; gap: 8px; }
+button.b { font: inherit; font-size: 14px; font-weight: 600; padding: 8px 16px; cursor: pointer; border: 1.5px solid var(--strong); background: var(--bg); color: var(--fg); }
+button.b:hover { background: var(--soft); }
+button.b.main { background: var(--strong); color: var(--bg); }
+button.b.main:hover { opacity: .85; }
+button.b:focus-visible { outline: 2px solid var(--strong); outline-offset: 2px; }
+kbd { font-family: var(--mono); font-size: 11.5px; border: 1px solid var(--line); border-bottom-width: 2px; padding: 0 4px; }
+
+.result { border: 1.5px solid var(--strong); padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; }
+.result.pass { border-width: 3px; }
+.result h3 { margin: 0; font-size: 17px; }
+.diff { margin: 0; font-family: var(--mono); font-size: 13px; line-height: 1.75; background: var(--code-bg); padding: 8px 0; overflow-x: auto; }
+.diff div { white-space: pre; padding: 0 14px 0 36px; position: relative; color: var(--code-fg); }
+.diff div::before { position: absolute; left: 12px; font-weight: 600; }
+.diff .ok::before { content: "✓"; }
+.diff .miss { background: var(--mark); font-weight: 600; }
+.diff .miss::before { content: "✗"; }
+.diff .ind { background: var(--mark); text-decoration: underline wavy; text-underline-offset: 3px; }
+.diff .ind::before { content: "⇥"; }
+.diff .opt { color: var(--code-dim); }
+.diff .opt::before { content: "·"; }
+.legend { display: flex; flex-wrap: wrap; gap: 4px 16px; font-size: 13px; color: var(--muted); }
+.next-hint { font-size: 14px; border-top: 1px solid var(--line); padding-top: 8px; }
+details summary { cursor: pointer; font-size: 14px; font-weight: 600; }
+details[open] summary { margin-bottom: 8px; }
+
+@media (max-width: 640px) {
+  .levels { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .levels .lvbtn:last-child { grid-column: 1 / -1; }
+  textarea.ed { font-size: 13.5px; }
+}
+
+.kind { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid var(--strong); }
+.kind button { font: inherit; font-weight: 700; font-size: 15px; padding: 10px; border: 0; background: var(--bg); color: var(--fg); cursor: pointer; }
+.kind button + button { border-left: 2px solid var(--strong); }
+.kind button.on { background: var(--strong); color: var(--bg); }
+.kind button:focus-visible { outline: 2px solid var(--strong); outline-offset: 2px; }
+.kind button small { display: block; font-weight: 400; font-size: 12px; opacity: .75; }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { font: inherit; font-size: 14px; padding: 6px 12px; border: 1.5px solid var(--line); background: var(--bg); color: var(--fg); cursor: pointer; display: inline-flex; gap: 6px; align-items: baseline; }
+.chips button:hover { border-color: var(--strong); }
+.chips button.on { background: var(--strong); color: var(--bg); border-color: var(--strong); }
+.chips button i { font-style: normal; font-family: var(--mono); font-size: 11px; opacity: .7; }
+.chips button:focus-visible { outline: 2px solid var(--strong); outline-offset: 2px; }
+.ctl { display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center; }
+.ctl .lab { font-size: 12px; color: var(--muted); margin-right: -8px; }
+
+.lines { border: 1.5px solid var(--strong); display: flex; flex-direction: column; }
+.lines .done { margin: 0; font-family: var(--mono); font-size: 14px; line-height: 1.75; background: var(--code-bg); padding: 8px 0; min-height: 40px; max-height: 420px; overflow: auto; }
+.lines .done div { white-space: pre; padding: 0 14px 0 36px; position: relative; }
+.lines .done div::before { position: absolute; left: 12px; font-weight: 600; }
+.lines .done .ok::before { content: "✓"; }
+.lines .done .shown { text-decoration: underline dotted; text-underline-offset: 3px; }
+.lines .done .shown::before { content: "◌"; }
+.lines .done .skip { color: var(--code-dim); }
+.lines .done .skip::before { content: "·"; }
+.lines .done .extra { color: var(--code-dim); }
+.lines .done .extra::before { content: "+"; }
+.lines .done .empty { color: var(--code-dim); padding-left: 14px; }
+.lines .inrow { display: flex; align-items: center; border-top: 1.5px solid var(--strong); }
+.lines .inrow span { font-family: var(--mono); font-size: 12px; color: var(--muted); padding: 0 8px 0 12px; font-variant-numeric: tabular-nums; }
+.lines input { flex: 1; min-width: 0; font-family: var(--mono); font-size: 15px; padding: 12px 12px 12px 4px; border: 0; background: var(--bg); color: var(--fg); white-space: pre; }
+.lines input:focus { outline: none; background: var(--soft); }
+.lines .msg { padding: 8px 14px; font-size: 14px; border-top: 1px solid var(--line); min-height: 38px; }
+.lines .msg code { font-family: var(--mono); background: var(--soft); padding: 0 4px; white-space: pre; }
+.lines .msg.bad { font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <h1>GPIO 무한 코드 연습</h1>
+    <div class="score" id="score"></div>
+  </header>
+
+  <div class="kind" id="kind" role="tablist" aria-label="연습 종류">
+    <button type="button" data-k="part">부품별 연습<small>센서·출력 하나씩 골라서</small></button>
+    <button type="button" data-k="combo">조합 문제<small>부품 2개 → 5개 → 종합</small></button>
+  </div>
+
+  <div class="chips" id="partChips" aria-label="부품 고르기"></div>
+  <div class="levels" id="levels" role="tablist" aria-label="단계"></div>
+
+  <div class="ctl">
+    <span class="lab">보기</span>
+    <div class="seg" id="modes" role="tablist" aria-label="보기 방식">
+      <button type="button" data-m="see">정답 보고</button>
+      <button type="button" data-m="parts">부품 조각만</button>
+      <button type="button" data-m="blind">안 보고</button>
+    </div>
+    <span class="lab">입력</span>
+    <div class="seg" id="inputs" role="tablist" aria-label="입력 방식">
+      <button type="button" data-i="line">한 줄씩 확인</button>
+      <button type="button" data-i="all">전체 쓰고 채점</button>
+    </div>
+  </div>
+
+  <section class="prob" id="prob"></section>
+  <div id="aid"></div>
+
+  <div id="allBox">
+    <textarea class="ed" id="editor" spellcheck="false" autocapitalize="off" autocomplete="off" aria-label="코드 쓰기" placeholder="여기에 전체 코드를 쳐 보세요"></textarea>
+    <div class="row" style="margin-top:12px">
+      <div class="btns">
+        <button type="button" class="b main" id="check">채점하기</button>
+        <button type="button" class="b" id="reveal">정답 보기</button>
+        <button type="button" class="b" id="fresh">새 문제 →</button>
+      </div>
+      <button type="button" class="b" id="clear">지우기</button>
+    </div>
+    <div id="result" style="margin-top:12px"></div>
+  </div>
+
+  <div id="lineBox">
+    <div class="lines">
+      <div class="done" id="doneLines"></div>
+      <div class="inrow"><span id="lineNo">1</span><input id="lineIn" type="text" spellcheck="false" autocomplete="off" autocapitalize="off" aria-label="다음 줄 입력"></div>
+      <div class="msg" id="lineMsg"></div>
+    </div>
+    <div class="row" style="margin-top:12px">
+      <div class="btns">
+        <button type="button" class="b" id="lHint">힌트</button>
+        <button type="button" class="b" id="lShow">이 줄 보기</button>
+        <button type="button" class="b" id="lFresh">새 문제 →</button>
+      </div>
+      <button type="button" class="b" id="lRestart">처음부터</button>
+    </div>
+  </div>
+
+  <details>
+    <summary>사용법 · 채점 규칙 · 표준 이름</summary>
+    <div class="note small">
+      <p><b>한 줄씩 확인</b>: 한 줄 치고 <kbd>Enter</kbd>를 누르면 바로 맞는지 알려 줍니다. 들여쓰기는 앞 줄을 보고 자동으로 채워지고, <code>else:</code>처럼 밖으로 나갈 땐 <kbd>Backspace</kbd>로 4칸씩 지웁니다. <code>print(...)</code> 줄은 건너뛰어도 됩니다.</p>
+      <p><b>전체 쓰고 채점</b>: 정답 코드의 줄이 모두 들어 있고 들여쓰기(스페이스 4칸 단위)가 같으면 정답입니다. 줄 순서가 달라도 정답으로 치지만 알려 드립니다.</p>
+      <p>띄어쓰기, <code>'</code>와 <code>"</code>, 주석, <code>True</code>/<code>g.HIGH</code>는 구별하지 않습니다.</p>
+      <p>표준 이름: <code>LED</code> · <code>LED_RED, LED_GREEN, LED_YEL</code> · <code>FAN</code>/<code>fan</code> · <code>SERVO</code>/<code>servo</code> · <code>TRIG, ECHO</code> · <code>dht</code> · <code>bus</code> · <code>lcd</code> · 값 <code>t</code> <code>h</code> <code>d</code> <code>lux</code> · 함수 <code>led_on</code> <code>angle</code> <code>distance</code> <code>read_lux</code>.</p>
+      <p>연속 정답은 '정답 보고'가 아닐 때, 정답·줄 보기를 쓰지 않았을 때만 올라갑니다. 기록은 이 브라우저에만 저장됩니다.</p>
+    </div>
+  </details>
+</div>
+
+<script>
+
+/* ===================================================================
+   1) 부품 정의 — 표준 코드 조각
+   =================================================================== */
+const P = {
+  led:   { name: "LED", gpio: true },
+  led3:  { name: "LED 3개", gpio: true },
+  fan:   { name: "DC 모터(선풍기)", gpio: true },
+  servo: { name: "서보(창문)", gpio: true },
+  lcd:   { name: "LCD", gpio: false },
+  dht:   { name: "온습도 센서", gpio: false },
+  dist:  { name: "거리 센서", gpio: true },
+  light: { name: "조도 센서", gpio: false },
+};
+const ORDER = ["led", "led3", "fan", "servo", "dist", "dht", "light", "lcd"];
+const SENSORS = ["dht", "dist", "light"];
+
+const FUNCS = {
+  led3: ["def led_on(pin):", "    for p in (LED_RED, LED_GREEN, LED_YEL):", "        g.output(p, p == pin)"],
+  servo: ["def angle(a):", "    servo.ChangeDutyCycle(2.5 + a / 18)", "    time.sleep(0.5)", "    servo.ChangeDutyCycle(0)"],
+  dist: ["def distance():", "    g.output(TRIG, True)", "    time.sleep(0.00001)", "    g.output(TRIG, False)", "    start = time.time()",
+         "    while g.input(ECHO) == 0:", "        start = time.time()", "    end = time.time()", "    while g.input(ECHO) == 1:",
+         "        end = time.time()", "    return (end - start) * 17150"],
+  light: ["def read_lux():", "    data = bus.read_i2c_block_data(0x23, 0x10, 2)", "    return (data[0] * 256 + data[1]) / 1.2"],
+};
+const READS = {
+  dht: ["try:", "    t = dht.temperature", "    h = dht.humidity", "except RuntimeError:", "    time.sleep(2)", "    continue"],
+  dist: ["d = distance()"],
+  light: ["lux = read_lux()"],
+};
+const VARS = {
+  t:   { s: "dht",   name: "온도", unit: "℃",  fmt: 'f"Temp: {t:.1f} C"',    th: () => ri(24, 30),      hi: ["높", "Hot"],    lo: ["낮", "Cool"] },
+  h:   { s: "dht",   name: "습도", unit: "%",   fmt: 'f"Humi: {h:.1f} %"',    th: () => ri(50, 80, 5),   hi: ["높", "Wet"],    lo: ["낮", "Dry"] },
+  d:   { s: "dist",  name: "거리", unit: "cm",  fmt: 'f"Dist: {d:.1f} cm"',   th: () => ri(5, 30, 5),    hi: ["멀", "Far"],    lo: ["가깝", "Near"] },
+  lux: { s: "light", name: "밝기", unit: "lux", fmt: 'f"Light: {lux:.0f} lux"', th: () => pick([30, 50, 100, 200]), hi: ["밝", "Bright"], lo: ["어둡", "Dark"] },
+};
+const VERB = {  // 면 / 거나 / 고
+  "높": ["높으면", "높거나", "높고"], "낮": ["낮으면", "낮거나", "낮고"], "멀": ["멀면", "멀거나", "멀고"],
+  "가깝": ["가까우면", "가깝거나", "가깝고"], "밝": ["밝으면", "밝거나", "밝고"], "어둡": ["어두우면", "어둡거나", "어둡고"],
+};
+
+/* ---------- 랜덤 도우미 ---------- */
+function ri(a, b, step = 1) { return a + step * Math.floor(Math.random() * (Math.floor((b - a) / step) + 1)); }
+function pick(a) { return a[Math.floor(Math.random() * a.length)]; }
+function shuffle(a) { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function sample(a, n) { return shuffle(a).slice(0, n); }
+const varsOf = s => Object.keys(VARS).filter(v => VARS[v].s === s);
+
+/* ===================================================================
+   2) 규칙(조건 → 동작) 만들기
+   =================================================================== */
+function makeCond(v) {
+  const V = VARS[v];
+  let op;
+  if (v === "d") op = Math.random() < .75 ? "<" : ">";
+  else if (v === "lux") op = Math.random() < .6 ? "<" : ">";
+  else op = Math.random() < .7 ? ">" : "<";
+  return { v, op, th: V.th() };
+}
+function condCode(c) { return `${c.v} ${c.op} ${c.th}`; }
+function condText(c, form) {     // form 0: ~면, 1: ~거나, 2: ~고
+  const V = VARS[c.v], stem = c.op === ">" ? V.hi[0] : V.lo[0];
+  return `${V.name}가 ${c.th}${V.unit}보다 ${VERB[stem][form]} (<code>${condCode(c)}</code>)`;
+}
+function condsText(cs, join) {
+  if (cs.length === 1) return condText(cs[0], 0);
+  return condText(cs[0], join === "or" ? 1 : 2) + " " + condText(cs[1], 0);
+}
+function binaryActs(out, ctx) {
+  if (out === "led") return { on: ["g.output(LED, True)"], off: ["g.output(LED, False)"], tOn: `LED(GPIO${ctx.ledPin})를 켜고`, tOff: "아니면 끄기" };
+  if (out === "fan") {
+    const A = pick([50, 60, 70, 80, 100]), B = pick([0, 0, 0, 40]);
+    return { on: [`fan.ChangeDutyCycle(${A})`], off: [`fan.ChangeDutyCycle(${B})`], tOn: `선풍기를 ${A}%로 돌리고`, tOff: B ? `아니면 ${B}%` : "아니면 끄기(0%)" };
+  }
+  if (out === "servo") {
+    const A = pick([90, 90, 180, 45, 135]);
+    return { on: [`angle(${A})`], off: ["angle(0)"], tOn: `창문을 ${A}°로 열고`, tOff: "아니면 0°로 닫기" };
+  }
+}
+function ruleBinary(out, vars, ctx) {
+  const cs = vars.map(makeCond);
+  const join = pick(["or", "and"]);
+  const cond = cs.map(condCode).join(` ${join} `);
+  if (out === "lcd") {
+    const c = cs[0], V = VARS[c.v];
+    const yes = c.op === ">" ? V.hi[1] : V.lo[1], no = c.op === ">" ? V.lo[1] : V.hi[1];
+    return {
+      text: `${condsText(cs, join)} LCD에 <code>${yes}</code>, 아니면 <code>${no}</code> 표시 (먼저 <code>lcd.clear()</code>)`,
+      lines: ["lcd.clear()", `if ${cond}:`, `    lcd.print("${yes}")`, "else:", `    lcd.print("${no}")`],
+    };
+  }
+  const a = binaryActs(out, ctx);
+  return {
+    text: `${condsText(cs, join)} ${a.tOn}, ${a.tOff}`,
+    lines: [`if ${cond}:`, ...a.on.map(x => "    " + x), "else:", ...a.off.map(x => "    " + x)],
+  };
+}
+function ruleDisplay(vars) {
+  const f = vars.map(v => VARS[v].fmt);
+  const lines = ["lcd.clear()", `lcd.print(${f[0]})`];
+  let text = `LCD 첫째 줄에 <code>${f[0]}</code>`;
+  if (f[1]) { lines.push("lcd.setCursor(0, 2)", `lcd.print(${f[1]})`); text += `, 둘째 줄에 <code>${f[1]}</code>`; }
+  return { text: text + " 표시", lines };
+}
+function ruleThree(out, v) {
+  const V = VARS[v];
+  let lo, hi;
+  if (v === "t") { lo = ri(22, 25); hi = lo + ri(2, 4); }
+  else if (v === "h") { lo = ri(40, 55, 5); hi = lo + 15; }
+  else if (v === "d") { lo = ri(5, 15, 5); hi = lo + ri(10, 20, 5); }
+  else { lo = pick([30, 50]); hi = pick([150, 200, 300]); }
+  if (out === "led3") return {
+    text: `${V.name}가 ${hi}${V.unit} 이상이면 빨강, ${lo}${V.unit} 미만이면 노랑, 그 사이면 초록 LED (<code>led_on</code> 함수로 하나만 켜기)`,
+    lines: [`if ${v} >= ${hi}:`, "    led_on(LED_RED)", `elif ${v} < ${lo}:`, "    led_on(LED_YEL)", "else:", "    led_on(LED_GREEN)"],
+  };
+  const a = pick([100, 90]), b = pick([60, 70]), c = pick([40, 50]);
+  return {
+    text: `${V.name}가 ${hi}${V.unit} 이상이면 선풍기 ${a}%, ${lo}${V.unit} 미만이면 ${c}%, 그 사이면 ${b}%`,
+    lines: [`if ${v} >= ${hi}:`, `    fan.ChangeDutyCycle(${a})`, `elif ${v} < ${lo}:`, `    fan.ChangeDutyCycle(${c})`, "else:", `    fan.ChangeDutyCycle(${b})`],
+  };
+}
+
+/* ===================================================================
+   3) 문제 만들기 — 단계 = 쓰는 부품 수
+   =================================================================== */
+const LEVELS = [
+  { n: 1, name: "부품 2개", desc: "센서 1 + 출력 1" },
+  { n: 2, name: "부품 3개", desc: "센서 1~2 + 출력 1~2" },
+  { n: 3, name: "부품 4개", desc: "센서 2 + 출력 2 등" },
+  { n: 4, name: "부품 5개", desc: "센서 2~3 + 출력 2~3" },
+  { n: 5, name: "종합 문제", desc: "시험 문제 그대로 · 숫자만 랜덤" },
+];
+
+function plan(lv) {
+  const outsBasic = ["led", "fan", "servo", "lcd"];
+  const outsAll = ["led", "led3", "fan", "servo", "lcd"];
+  let ns, no, pool = lv >= 3 ? outsAll : outsBasic;
+  if (lv === 1) { ns = 1; no = 1; }
+  if (lv === 2) { [ns, no] = pick([[1, 2], [2, 1]]); }
+  if (lv === 3) { [ns, no] = pick([[2, 2], [2, 2], [1, 3]]); }
+  if (lv === 4) { [ns, no] = pick([[3, 2], [2, 3]]); }
+  const sensors = sample(SENSORS, ns);
+  let outs;
+  do { outs = sample(pool, no); } while (outs.includes("led") && outs.includes("led3") && Math.random() < .7);
+  outs.sort((a, b) => (b === "led3") - (a === "led3"));
+  return { sensors, outs };
+}
+
+function generate(lv) {
+  if (lv === 5) return finalProblem();
+  const { sensors, outs } = plan(lv);
+  const ctx = { ledPin: pick(outs.includes("led3") ? [5, 6, 13, 19] : [17, 27, 22, 5, 6, 13, 19]) };
+  // 출력마다 사용할 센서 나누기 (모든 센서가 한 번 이상 쓰이게)
+  const q = shuffle(sensors), groups = outs.map(() => []);
+  outs.forEach((o, i) => { groups[i].push(q[i % q.length]); });
+  if (sensors.length > outs.length) groups[groups.length - 1].push(...q.slice(outs.length));
+  const rules = outs.map((o, i) => {
+    const ss = [...new Set(groups[i])];
+    const vars = ss.map(s => pick(varsOf(s)));
+    if (o === "lcd") {
+      if (ss.length > 1 || Math.random() < .55) {
+        let vs = vars.slice(0, 2);
+        if (vs.length === 1 && ss[0] === "dht" && Math.random() < .6) vs = ["t", "h"];
+        return { out: o, ...ruleDisplay(vs) };
+      }
+      return { out: o, ...ruleBinary(o, vars, ctx) };
+    }
+    if ((o === "led3" || (o === "fan" && lv >= 3 && Math.random() < .4)) && ss.length === 1) return { out: o, ...ruleThree(o, vars[0]) };
+    if (o === "led3") return { out: o, ...ruleThree(o, vars[0]) };
+    return { out: o, ...ruleBinary(o, vars, ctx) };
+  });
+  const parts = ORDER.filter(p => sensors.includes(p) || outs.includes(p));
+  const sleep = sensors.includes("dht") ? 2 : pick([0.5, 1]);
+  return { lv, parts, ctx, rules, sleep, code: build(parts, ctx, rules, sleep) };
+}
+
+/* ---------- 표준 코드 조립 ---------- */
+function partLines(p, ctx) {
+  const L = { imp: [], cst: [], set: [], obj: [], fn: [], read: [], fin: [] };
+  if (p === "led")   { L.cst.push(`LED = ${ctx.ledPin}`); L.set.push("g.setup(LED, g.OUT)"); }
+  if (p === "led3")  { L.cst.push("LED_RED, LED_GREEN, LED_YEL = 17, 27, 22"); L.set.push("for p in (LED_RED, LED_GREEN, LED_YEL):", "    g.setup(p, g.OUT)"); L.fn = FUNCS.led3; }
+  if (p === "fan")   { L.cst.push("FAN = 18"); L.set.push("g.setup(FAN, g.OUT)"); L.obj.push("fan = g.PWM(FAN, 100)", "fan.start(0)"); L.fin.push("fan.stop()"); }
+  if (p === "servo") { L.cst.push("SERVO = 26"); L.set.push("g.setup(SERVO, g.OUT)"); L.obj.push("servo = g.PWM(SERVO, 50)", "servo.start(0)"); L.fn = FUNCS.servo; L.fin.push("servo.stop()"); }
+  if (p === "dist")  { L.cst.push("TRIG, ECHO = 23, 24"); L.set.push("g.setup(TRIG, g.OUT)", "g.setup(ECHO, g.IN)"); L.fn = FUNCS.dist; L.read = READS.dist; }
+  if (p === "dht")   { L.imp.push("import board", "import adafruit_dht"); L.obj.push("dht = adafruit_dht.DHT22(board.D4, use_pulseio=False)"); L.read = READS.dht; L.fin.push("dht.exit()"); }
+  if (p === "light") { L.imp.push("import smbus"); L.obj.push("bus = smbus.SMBus(1)"); L.fn = FUNCS.light; L.read = READS.light; }
+  if (p === "lcd")   { L.imp.push("import lcdDriver as ld"); L.obj.push("lcd = ld.lcd(0x27)"); L.fin.push("lcd.clear()"); }
+  return L;
+}
+function build(parts, ctx, rules, sleep) {
+  const gpio = parts.some(p => P[p].gpio);
+  const all = parts.map(p => partLines(p, ctx));
+  const cat = k => all.flatMap(L => L[k]);
+  const out = [];
+  if (gpio) out.push("import RPi.GPIO as g");
+  out.push("import time", ...cat("imp"), "");
+  const cst = cat("cst"); if (cst.length) out.push(...cst, "");
+  if (gpio) out.push("g.setmode(g.BCM)", ...cat("set"), "");
+  const obj = cat("obj"); if (obj.length) out.push(...obj, "");
+  all.forEach(L => { if (L.fn.length) out.push(...L.fn, ""); });
+  out.push("try:", "    while True:");
+  const reads = ["dht", "dist", "light"].filter(s => parts.includes(s)).flatMap(s => READS[s]);
+  reads.forEach(l => out.push("        " + l));
+  out.push("");
+  rules.forEach(r => { r.lines.forEach(l => out.push("        " + l)); out.push(""); });
+  out.push(`        time.sleep(${sleep})`, "except KeyboardInterrupt:", '    print("멈춤")', "finally:");
+  cat("fin").forEach(l => out.push("    " + l));
+  if (gpio) out.push("    g.cleanup()");
+  if (!gpio && !cat("fin").length) out.push('    print("끝")');
+  return out.join("\n");
+}
+
+/* ---------- 종합 문제 (시험 코드 그대로, 숫자만 랜덤) ---------- */
+const FINAL = `import RPi.GPIO as g
+import time
+import board
+import adafruit_dht
+import smbus
+import lcdDriver as ld
+
+LED_RED, LED_GREEN, LED_YEL = 17, 27, 22
+FAN = 18
+LIGHT_ADDR = 0x23
+
+T_LOW, T_HIGH = 23.0, 26.0
+H_HIGH = 70.0
+DARK_LUX = 50
+
+FAN_BRIGHT = {"상": 100, "중": 75, "하": 55}
+FAN_DARK   = {"상": 70,  "중": 50, "하": 40}
+LED_OF     = {"상": LED_RED, "중": LED_GREEN, "하": LED_YEL}
+
+g.setwarnings(False)
+g.setmode(g.BCM)
+for p in (LED_RED, LED_GREEN, LED_YEL, FAN):
+    g.setup(p, g.OUT)
+
+fan = g.PWM(FAN, 100)
+fan.start(0)
+
+dht = adafruit_dht.DHT22(board.D4, use_pulseio=False)
+bus = smbus.SMBus(1)
+lcd = ld.lcd(0x27)
+lcd.noCursor()
+
+def get_level(t, h):
+    if t >= T_HIGH or h >= H_HIGH:
+        return "상"
+    elif t < T_LOW:
+        return "하"
+    else:
+        return "중"
+
+def led_on(pin):
+    for p in (LED_RED, LED_GREEN, LED_YEL):
+        g.output(p, p == pin)
+
+def read_lux():
+    data = bus.read_i2c_block_data(LIGHT_ADDR, 0x10, 2)
+    return (data[0] * 256 + data[1]) / 1.2
+
+now_speed = 0
+def set_fan(speed):
+    global now_speed
+    if speed != now_speed:
+        fan.ChangeDutyCycle(100)
+        time.sleep(0.2)
+        fan.ChangeDutyCycle(speed)
+        now_speed = speed
+
+print("System Start")
+try:
+    while True:
+        try:
+            t = dht.temperature
+            h = dht.humidity
+        except RuntimeError:
+            print("온습도 다시 읽는 중...")
+            time.sleep(2)
+            continue
+        if t is None or h is None:
+            time.sleep(2)
+            continue
+
+        level = get_level(t, h)
+        led_on(LED_OF[level])
+
+        lux = read_lux()
+        if lux >= DARK_LUX:
+            light = "밝음"
+            speed = FAN_BRIGHT[level]
+        else:
+            light = "어두움"
+            speed = FAN_DARK[level]
+        set_fan(speed)
+
+        lcd.clear()
+        lcd.print(f"Temp: {t:.1f} C")
+        lcd.setCursor(0, 2)
+        lcd.print(f"Humi: {h:.1f} %")
+
+        print(t, h, level, light, lux, speed)
+        time.sleep(2)
+
+except KeyboardInterrupt:
+    print("사용자 중단")
+except Exception as e:
+    print("오류:", type(e).__name__, e)
+finally:
+    fan.stop()
+    led_on(None)
+    lcd.clear()
+    dht.exit()
+    g.cleanup()
+    print("System the End")`;
+function finalProblem() {
+  const tl = ri(22, 25), thi = tl + ri(2, 4), hh = ri(60, 80, 5), dark = pick([30, 50, 100]);
+  const b = [100, pick([70, 75, 80]), pick([50, 55, 60])];
+  const dk = b.map(x => Math.max(40, Math.round(x * 0.7 / 5) * 5));
+  if (dk[2] >= dk[1]) dk[1] = dk[2] + 10;
+  if (dk[1] >= dk[0]) dk[0] = dk[1] + 10;
+  const code = FINAL
+    .replace(/^T_LOW, T_HIGH = .*$/m, `T_LOW, T_HIGH = ${tl}.0, ${thi}.0`)
+    .replace(/^H_HIGH = .*$/m, `H_HIGH = ${hh}.0`)
+    .replace(/^DARK_LUX = .*$/m, `DARK_LUX = ${dark}`)
+    .replace(/^FAN_BRIGHT = .*$/m, `FAN_BRIGHT = {"상": ${b[0]}, "중": ${b[1]}, "하": ${b[2]}}`)
+    .replace(/^FAN_DARK .*$/m, `FAN_DARK   = {"상": ${dk[0]},  "중": ${dk[1]}, "하": ${dk[2]}}`);
+  const rules = [
+    { text: `온습도를 읽어 상·중·하를 정한다: 온도 ${thi}℃ 이상 <b>또는</b> 습도 ${hh}% 이상이면 <b>상</b>, 온도 ${tl}℃ 미만이면 <b>하</b>, 나머지는 <b>중</b> (<code>get_level(t, h)</code>)` },
+    { text: "상 → 빨강, 중 → 초록, 하 → 노랑 LED (<code>LED_OF</code> 딕셔너리 + <code>led_on</code>)" },
+    { text: `조도 ${dark} lux 이상(밝음)이면 상·중·하에 따라 선풍기 ${b[0]} · ${b[1]} · ${b[2]}%` },
+    { text: `어두우면 ${dk[0]} · ${dk[1]} · ${dk[2]}%로 약하게 (<code>FAN_BRIGHT</code> / <code>FAN_DARK</code> 표, <code>set_fan</code>은 0.2초 부스트)` },
+    { text: "LCD 첫째 줄 <code>f\"Temp: {t:.1f} C\"</code>, 둘째 줄 <code>f\"Humi: {h:.1f} %\"</code>, 2초마다 반복" },
+  ];
+  return { lv: 5, parts: ["led3", "fan", "dht", "light", "lcd"], ctx: {}, rules, sleep: 2, code, final: true };
+}
+
+/* ===================================================================
+   4) 채점 — 줄 단위, 순서 무관, 들여쓰기 확인
+   =================================================================== */
+function splitOutside(str, chr) {
+  const out = []; let q = null, start = 0;
+  for (let i = 0; i < str.length; i++) {
+    const c = str[i];
+    if (q) { if (c === q && str[i - 1] !== "\\") q = null; }
+    else if (c === '"' || c === "'") q = c;
+    else if (c === chr) { out.push(str.slice(start, i)); start = i + 1; if (chr === "#") return out; }
+  }
+  out.push(str.slice(start)); return out;
+}
+function logical(code) {
+  const items = [];
+  code.replace(/\r/g, "").split("\n").forEach(raw => {
+    const line = splitOutside(raw.replace(/\t/g, "    "), "#")[0];
+    if (!line.trim()) return;
+    const sp = line.match(/^ */)[0];
+    splitOutside(line, ";").forEach(part => {
+      const t = part.trim(); if (!t) return;
+      items.push({
+        lvl: Math.floor(sp.length / 4), show: sp + t, opt: /^print\(/.test(t),
+        key: t.replace(/\s+/g, "").replace(/'/g, '"').replace(/g\.HIGH/g, "True").replace(/g\.LOW/g, "False"),
+      });
+    });
+  });
+  return items;
+}
+function lcs(a, b) {
+  const dp = Array.from({ length: a.length + 1 }, () => new Int16Array(b.length + 1));
+  for (let i = a.length - 1; i >= 0; i--) for (let j = b.length - 1; j >= 0; j--)
+    dp[i][j] = a[i] === b[j] ? dp[i + 1][j + 1] + 1 : Math.max(dp[i + 1][j], dp[i][j + 1]);
+  return dp[0][0];
+}
+function grade(user, model) {
+  const A = logical(model), B = logical(user);
+  const used = new Array(B.length).fill(false);
+  const rows = A.map(a => {
+    if (a.opt) return { ...a, st: "opt" };
+    let k = B.findIndex((b, j) => !used[j] && b.key === a.key && b.lvl === a.lvl);
+    if (k >= 0) { used[k] = true; return { ...a, st: "ok" }; }
+    k = B.findIndex((b, j) => !used[j] && b.key === a.key);
+    if (k >= 0) { used[k] = true; return { ...a, st: "ind" }; }
+    return { ...a, st: "miss" };
+  });
+  const need = rows.filter(r => r.st !== "opt");
+  const ok = need.filter(r => r.st === "ok").length;
+  const miss = need.filter(r => r.st === "miss").length, ind = need.filter(r => r.st === "ind").length;
+  const req = A.filter(a => !a.opt).map(a => a.key), mine = B.filter(b => !b.opt).map(b => b.key);
+  const ordered = lcs(req, mine) >= ok + ind;
+  return { rows, ok, total: need.length, miss, ind, pass: !miss && !ind, ordered, extra: B.filter((b, j) => !used[j] && !b.opt).length };
+}
+function mask(s) {
+  const lead = s.match(/^ */)[0], t = s.slice(lead.length);
+  return lead + t.slice(0, 3) + t.slice(3).replace(/[^\s()[\]:,.=]/g, "▢");
+}
+
+
+/* ===================================================================
+   5) 부품별 연습 문제
+   =================================================================== */
+const PART_LIST = ["led", "led3", "fan", "servo", "dist", "dht", "light", "lcd"];
+const WORDS = ["Hello", "Raspberry Pi", "GPIO Test", "Exam OK", "Lee Su Jin", "2026591019", "Smart Home", "Good Luck"];
+
+function prepLines(p, ctx) {
+  const L = partLines(p, ctx), out = [];
+  if (P[p].gpio) out.push("import RPi.GPIO as g");
+  out.push(...L.imp);
+  if (L.cst.length) out.push("", ...L.cst);
+  if (P[p].gpio) out.push("", "g.setmode(g.BCM)", ...L.set);
+  if (L.obj.length) out.push("", ...L.obj);
+  return out;
+}
+function prog(p, ctx, lines, sleep) { return build([p], ctx, [{ lines }], sleep); }
+function seq(items, gap) { const out = []; items.forEach((x, i) => { out.push(x); if (i < items.length - 1) out.push(`time.sleep(${gap})`); }); return out; }
+
+const PART_TASKS = {
+  led: [
+    c => ({ title: "LED 준비 코드", rules: [`LED를 <b>GPIO${c.ledPin}</b>에 꽂았습니다. 불러오기 → 핀 번호 <code>LED</code> → 번호표 → 출력 설정까지 쓰세요.`], code: prepLines("led", c).join("\n") }),
+    c => { const x = pick([0.5, 1, 2]); return { title: "LED 깜빡이", sleep: x, rules: [`LED(GPIO${c.ledPin})를 ${x}초 켜고 ${x}초 끄기를 계속 반복`], code: prog("led", c, ["g.output(LED, True)", `time.sleep(${x})`, "g.output(LED, False)"], x) }; },
+  ],
+  led3: [
+    c => ({ title: "LED 3개 준비와 led_on", rules: ["빨강 17 · 초록 27 · 노랑 22 준비(for문으로 출력 설정)와, 하나만 켜는 함수 <code>led_on(pin)</code>을 쓰세요."], code: [...prepLines("led3", c), "", ...FUNCS.led3].join("\n") }),
+    c => {
+      const x = pick([0.5, 1]), ord = shuffle([["LED_RED", "빨강"], ["LED_GREEN", "초록"], ["LED_YEL", "노랑"]]);
+      return { title: "3색 차례로", sleep: x, rules: [`<code>led_on</code>으로 ${ord.map(o => o[1]).join(" → ")} 순서로 ${x}초씩 켜기를 반복`], code: prog("led3", c, seq(ord.map(o => `led_on(${o[0]})`), x), x) };
+    },
+  ],
+  fan: [
+    c => ({ title: "선풍기 준비 코드", rules: ["DC 모터(GPIO18) 준비: 불러오기 → <code>FAN</code> → 번호표 → 출력 설정 → <code>fan</code> PWM 100Hz 만들고 0으로 시작"], code: prepLines("fan", c).join("\n") }),
+    c => {
+      const n = pick([2, 3]), sp = sample([40, 50, 60, 70, 80, 90, 100], n), dur = pick([2, 3]);
+      return { title: "선풍기 속도 바꾸기", sleep: dur, rules: [`선풍기를 ${sp.map(x => x + "%").join(" → ")}로 ${dur}초씩 바꾸기를 반복`], code: prog("fan", c, seq(sp.map(x => `fan.ChangeDutyCycle(${x})`), dur), dur) };
+    },
+  ],
+  servo: [
+    c => ({ title: "서보 준비와 angle", rules: ["서보(GPIO26) 준비(PWM 50Hz, 0으로 시작)와 각도 함수 <code>angle(a)</code>를 쓰세요. (각도 ÷ 18 + 2.5, 0.5초 뒤 떨림 방지)"], code: [...prepLines("servo", c), "", ...FUNCS.servo].join("\n") }),
+    c => {
+      const n = pick([2, 3]), an = sample([0, 45, 90, 135, 180], n);
+      return { title: "창문 각도 바꾸기", sleep: 1, rules: [`<code>angle</code>로 ${an.map(x => x + "°").join(" → ")} 순서로 1초씩 움직이기를 반복`], code: prog("servo", c, seq(an.map(x => `angle(${x})`), 1), 1) };
+    },
+  ],
+  dist: [
+    c => ({ title: "거리 센서 준비와 distance", rules: ["거리 센서 준비(<code>TRIG, ECHO = 23, 24</code>, 출력·입력 설정)와 함수 <code>distance()</code>를 쓰세요. 결과는 cm."], code: [...prepLines("dist", c), "", ...FUNCS.dist].join("\n") }),
+    c => ({ title: "거리 출력", sleep: 0.5, rules: ["0.5초마다 거리를 재서 출력 (<code>d = distance()</code>)"], code: prog("dist", c, ['print(f"{d:.1f} cm")'], 0.5) }),
+  ],
+  dht: [
+    c => ({ title: "온습도 센서 준비", rules: ["GPIO4의 DHT22 센서를 <code>dht</code>로 만드세요. (불러오기 2줄 + 만들기 1줄)"], code: prepLines("dht", c).join("\n") }),
+    c => ({ title: "온습도 출력", sleep: 2, rules: ["2초마다 온도 <code>t</code>, 습도 <code>h</code>를 읽어 출력. 읽기 실패(RuntimeError)면 2초 쉬고 다시"], code: prog("dht", c, ["print(t, h)"], 2) }),
+  ],
+  light: [
+    c => ({ title: "조도 센서 준비와 read_lux", rules: ["I2C 통로 <code>bus</code>를 열고, 주소 0x23에서 밝기(lux)를 돌려주는 함수 <code>read_lux()</code>를 쓰세요."], code: [...prepLines("light", c), "", ...FUNCS.light].join("\n") }),
+    c => ({ title: "밝기 출력", sleep: 1, rules: ["1초마다 밝기를 읽어 출력 (<code>lux = read_lux()</code>)"], code: prog("light", c, ["print(lux)"], 1) }),
+  ],
+  lcd: [
+    c => { const [a, b] = sample(WORDS, 2); return { title: "LCD 두 줄 쓰기", rules: [`LCD(0x27)를 연결하고 지운 뒤, 첫째 줄에 <code>${a}</code>, 둘째 줄에 <code>${b}</code>`], code: ["import lcdDriver as ld", "", "lcd = ld.lcd(0x27)", "lcd.clear()", `lcd.print("${a}")`, "lcd.setCursor(0, 2)", `lcd.print("${b}")`].join("\n") }; },
+    c => { const [a, b] = sample(WORDS, 2); return { title: "LCD 반복 표시", sleep: 2, rules: [`2초마다 LCD를 지우고 첫째 줄 <code>${a}</code>, 둘째 줄 <code>${b}</code> 표시, 끝나면 화면 지우기`], code: prog("lcd", c, ["lcd.clear()", `lcd.print("${a}")`, "lcd.setCursor(0, 2)", `lcd.print("${b}")`], 2) }; },
+  ],
+};
+function partProblem(p) {
+  const ctx = { ledPin: pick([17, 27, 22, 5, 6, 13, 19]) };
+  const t = pick(PART_TASKS[p])(ctx);
+  return { ...t, parts: [p], ctx, kind: "part", key: "p:" + p, rules: t.rules.map(x => ({ text: x })) };
+}
+
+/* ===================================================================
+   6) 화면
+   =================================================================== */
+const $ = s => document.querySelector(s);
+const KEY = "gpio-infinite-v2";
+let S = { kind: "part", part: "led", lv: 1, mode: "see", input: "line", stats: {} };
+try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || "{}")); } catch (e) {}
+function save() { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
+function st(key) { return S.stats[key] || (S.stats[key] = { solved: 0, streak: 0, best: 0 }); }
+
+let cur = null, revealed = false, lastSolved = null;
+
+const PINS = {
+  led: c => [`LED`, `GPIO${c.ledPin} → <code>LED = ${c.ledPin}</code>`],
+  led3: () => ["LED 3개", "빨강 17 · 초록 27 · 노랑 22"],
+  fan: () => ["DC 모터", "드라이버 A-IA → GPIO18, 100Hz"],
+  servo: () => ["서보", "GPIO26, 50Hz, <code>angle(a)</code> 함수"],
+  dist: () => ["거리 센서", "TRIG 23 · ECHO 24, <code>distance()</code> 함수"],
+  dht: () => ["온습도 센서", "DHT22, GPIO4 (<code>board.D4</code>)"],
+  light: () => ["조도 센서", "I2C 0x23, <code>read_lux()</code> 함수"],
+  lcd: () => ["LCD", "I2C 0x27, lcdDriver"],
+};
+
+function drawTop() {
+  document.querySelectorAll("#kind button").forEach(b => b.classList.toggle("on", b.dataset.k === S.kind));
+  document.querySelectorAll("#modes button").forEach(b => b.classList.toggle("on", b.dataset.m === S.mode));
+  document.querySelectorAll("#inputs button").forEach(b => b.classList.toggle("on", b.dataset.i === S.input));
+  $("#partChips").hidden = S.kind !== "part";
+  $("#levels").hidden = S.kind !== "combo";
+  $("#allBox").hidden = S.input !== "all";
+  $("#lineBox").hidden = S.input !== "line";
+  const chips = $("#partChips"); chips.innerHTML = "";
+  PART_LIST.forEach(p => {
+    const b = document.createElement("button"); b.type = "button";
+    b.className = S.part === p ? "on" : "";
+    b.innerHTML = `${P[p].name}<i>${st("p:" + p).solved}</i>`;
+    b.addEventListener("click", () => { S.part = p; save(); newProblem(); });
+    chips.appendChild(b);
+  });
+  const box = $("#levels"); box.innerHTML = "";
+  LEVELS.forEach(L => {
+    const s = st("c" + L.n);
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "lvbtn" + (S.lv === L.n ? " on" : "");
+    b.innerHTML = `<b>${L.n}단계 · ${L.name}</b><span>${L.desc}</span><i>정답 ${s.solved} · 연속 ${s.streak}</i>`;
+    b.addEventListener("click", () => { S.lv = L.n; save(); newProblem(); });
+    box.appendChild(b);
+  });
+  const tot = Object.values(S.stats).reduce((a, s) => a + s.solved, 0);
+  $("#score").textContent = `맞힌 문제 ${tot}개`;
+}
+document.querySelectorAll("#kind button").forEach(b => b.addEventListener("click", () => { S.kind = b.dataset.k; save(); newProblem(); }));
+document.querySelectorAll("#modes button").forEach(b => b.addEventListener("click", () => { S.mode = b.dataset.m; save(); drawTop(); drawAid(); }));
+document.querySelectorAll("#inputs button").forEach(b => b.addEventListener("click", () => { S.input = b.dataset.i; save(); drawTop(); startInput(); }));
+
+function drawProblem() {
+  const p = cur, box = $("#prob");
+  const names = p.parts.map(x => P[x].name);
+  const title = p.kind === "part" ? p.title
+    : p.final ? "종합 문제: 온습도 · LCD · LED · DC 모터 · 조도 센서" : names.join(" + ") + "를 함께 쓰는 코드를 작성하세요.";
+  const tag = p.kind === "part" ? `부품별 연습 · ${P[p.parts[0]].name}` : `${p.lv}단계 · 부품 ${p.parts.length}개${p.final ? " · 종합" : ""}`;
+  const loop = p.sleep != null && !p.final ? `<li>${p.sleep}초마다 반복, <kbd>Ctrl</kbd>+<kbd>C</kbd>로 멈추면 정리 (<code>try</code> / <code>finally</code>)</li>` : "";
+  box.innerHTML = `
+    <div class="tag">${tag}</div>
+    <h2>${title}</h2>
+    ${p.kind === "combo" ? `<div class="parts">${names.map(n => `<span>${n}</span>`).join("")}</div>` : ""}
+    <ol class="reqs">${p.rules.map(r => `<li>${r.text}</li>`).join("")}${loop}</ol>
+    <div class="tablewrap"><table class="pins">${p.parts.map(x => { const [a, b] = PINS[x](p.ctx); return `<tr><td>${a}</td><td>${b}</td></tr>`; }).join("")}</table></div>`;
+}
+function drawAid() {
+  const box = $("#aid"); box.innerHTML = "";
+  if (!cur) return;
+  if (S.mode === "see") {
+    const pre = document.createElement("pre"); pre.className = "code ghost"; pre.textContent = cur.code; box.appendChild(pre);
+  } else if (S.mode === "parts" && !cur.final) {
+    const wrap = document.createElement("div"); wrap.className = "snips";
+    cur.parts.forEach(x => {
+      const L = partLines(x, cur.ctx);
+      const lines = [...L.imp, ...L.cst, ...L.set, ...L.obj, ...(L.fn.length ? ["", ...L.fn] : []), ...(L.read.length ? ["", "# 반복 안에서", ...L.read] : []), ...(L.fin.length ? ["", "# finally", ...L.fin] : [])];
+      const d = document.createElement("div"); d.className = "snip";
+      d.innerHTML = `<b>${P[x].name}</b>`;
+      const pre = document.createElement("pre"); pre.className = "code"; pre.textContent = lines.join("\n");
+      d.appendChild(pre); wrap.appendChild(d);
+    });
+    box.appendChild(wrap);
+  } else if (S.mode === "parts" && cur.final) {
+    box.innerHTML = `<p class="small">종합 문제는 부품 조각 대신 <b>정답 보고</b>로 먼저 익힌 뒤 <b>안 보고</b>로 넘어가세요.</p>`;
+  }
+}
+
+function newProblem() {
+  cur = S.kind === "part" ? partProblem(S.part) : { ...generate(S.lv), kind: "combo", key: "c" + S.lv };
+  revealed = false;
+  $("#editor").value = ""; $("#result").innerHTML = ""; $("#reveal").textContent = "정답 보기";
+  drawTop(); drawProblem(); drawAid(); startInput();
+}
+function record(pass, clean) {
+  const s = st(cur.key);
+  if (pass && lastSolved !== cur) {
+    lastSolved = cur; s.solved++;
+    if (clean && S.mode !== "see") { s.streak++; s.best = Math.max(s.best, s.streak); }
+  }
+  if (!pass) s.streak = 0;
+  save(); drawTop();
+  return s;
+}
+function upHint(s) {
+  if (S.mode === "see") return " 이제 <b>부품 조각만</b>이나 <b>안 보고</b>로 도전해 보세요.";
+  if (cur.kind === "part" && s.streak >= 3) return " 이 부품은 충분합니다. 다른 부품이나 <b>조합 문제</b>로 넘어가 보세요.";
+  if (cur.kind === "combo" && s.streak >= 3 && cur.lv < 5) return ` 이 단계는 충분합니다. <b>${cur.lv + 1}단계</b>로 넘어가 보세요.`;
+  return "";
+}
+
+/* ---------- 전체 쓰고 채점 ---------- */
+function showResult(r) {
+  const box = $("#result"); box.innerHTML = "";
+  const div = document.createElement("div"); div.className = "result" + (r.pass ? " pass" : "");
+  const notes = [];
+  if (r.miss) notes.push(`✗ 빠졌거나 다른 줄 ${r.miss}개`);
+  if (r.ind) notes.push(`⇥ 들여쓰기가 다른 줄 ${r.ind}개`);
+  if (!r.ordered) notes.push("줄 순서가 정답과 다른 곳이 있습니다 (채점에는 영향 없음)");
+  if (r.extra) notes.push(`정답에 없는 줄 ${r.extra}개`);
+  notes.push("· print 줄은 없어도 됨");
+  div.innerHTML = (r.pass ? `<h3>✓ 정답 — ${r.total}줄 모두 맞았습니다</h3>` : `<h3>${r.total}줄 중 ${r.ok}줄 맞음</h3>`) + `<div class="legend">${notes.map(n => `<span>${n}</span>`).join("")}</div>`;
+  const pre = document.createElement("div"); pre.className = "diff";
+  r.rows.forEach(row => { const d = document.createElement("div"); d.className = row.st; d.textContent = row.st === "miss" && !revealed ? mask(row.show) : row.show; pre.appendChild(d); });
+  div.appendChild(pre);
+  if (r.pass) {
+    const s = st(cur.key);
+    const n = document.createElement("div"); n.className = "next-hint"; n.innerHTML = `연속 정답 ${s.streak}개.` + upHint(s); div.appendChild(n);
+    const nx = document.createElement("button"); nx.type = "button"; nx.className = "b main"; nx.textContent = "다음 문제 →"; nx.addEventListener("click", newProblem);
+    const bb = document.createElement("div"); bb.className = "btns"; bb.appendChild(nx); div.appendChild(bb);
+    setTimeout(() => nx.focus(), 0);
+  } else if (!revealed) {
+    const n = document.createElement("div"); n.className = "small"; n.textContent = "▢ 는 빠진 줄의 글자 수 힌트입니다. '정답 보기'를 누르면 전부 보입니다."; div.appendChild(n);
+  }
+  box.appendChild(div);
+}
+function check() {
+  if (!cur) return;
+  const r = grade($("#editor").value, cur.code);
+  record(r.pass, !revealed);
+  showResult(r);
+}
+$("#check").addEventListener("click", check);
+$("#fresh").addEventListener("click", newProblem);
+$("#clear").addEventListener("click", () => { $("#editor").value = ""; $("#result").innerHTML = ""; $("#editor").focus(); });
+$("#reveal").addEventListener("click", () => {
+  revealed = !revealed; $("#reveal").textContent = revealed ? "정답 숨기기" : "정답 보기";
+  if (revealed) { st(cur.key).streak = 0; save(); drawTop(); showResult(grade($("#editor").value, cur.code)); }
+  else $("#result").innerHTML = "";
+});
+
+function indentKeys(el, e, onEnter) {
+  const s = el.selectionStart, en = el.selectionEnd, v = el.value, ls = el.tagName === "TEXTAREA" ? v.lastIndexOf("\n", s - 1) + 1 : 0;
+  if (e.key === "Tab" && !e.shiftKey) { e.preventDefault(); el.setRangeText("    ", s, en, "end"); return true; }
+  if (e.key === "Tab" && e.shiftKey) {
+    e.preventDefault(); const sp = v.slice(ls).match(/^ {1,4}/);
+    if (sp) { el.setRangeText("", ls, ls + sp[0].length, "preserve"); el.setSelectionRange(Math.max(ls, s - sp[0].length), Math.max(ls, en - sp[0].length)); }
+    return true;
+  }
+  if (e.key === "Backspace" && s === en && s > ls) {
+    const before = v.slice(ls, s);
+    if (/^ +$/.test(before)) { e.preventDefault(); const cut = before.length % 4 || 4; el.setRangeText("", s - cut, s, "end"); return true; }
+  }
+  return false;
+}
+const ed = $("#editor");
+ed.addEventListener("keydown", e => {
+  if (e.isComposing) return;
+  if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); check(); return; }
+  if (indentKeys(ed, e)) return;
+  if (e.key === "Enter" && !e.shiftKey) {
+    e.preventDefault();
+    const s = ed.selectionStart, v = ed.value, ls = v.lastIndexOf("\n", s - 1) + 1, before = v.slice(ls, s);
+    let ind = before.match(/^ */)[0].length; if (/:\s*(#.*)?$/.test(before)) ind += 4;
+    ed.setRangeText("\n" + " ".repeat(ind), s, ed.selectionEnd, "end");
+  }
+});
+
+/* ---------- 한 줄씩 확인 ---------- */
+let LN = null;
+const lineIn = $("#lineIn"), lineMsg = $("#lineMsg"), doneBox = $("#doneLines");
+function startInput() {
+  if (S.input === "all") { setTimeout(() => ed.focus({ preventScroll: true }), 30); return; }
+  LN = { items: logical(cur.code), k: 0, rows: [], fails: 0, totalFails: 0, shown: 0, showNow: false, done: false };
+  drawLines(); msg("", "첫 줄부터 쳐 보세요. 한 줄 치고 <kbd>Enter</kbd>.");
+  setIndentPrefill();
+  setTimeout(() => lineIn.focus({ preventScroll: true }), 30);
+}
+function msg(cls, html) { lineMsg.className = "msg " + cls; lineMsg.innerHTML = html; }
+const escH = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+function drawLines() {
+  doneBox.innerHTML = "";
+  if (!LN.rows.length) { const d = document.createElement("div"); d.className = "empty"; d.textContent = "맞힌 줄이 여기에 쌓입니다"; doneBox.appendChild(d); }
+  LN.rows.forEach(r => { const d = document.createElement("div"); d.className = r.cls; d.textContent = r.text; doneBox.appendChild(d); });
+  doneBox.scrollTop = doneBox.scrollHeight;
+  const need = LN.items.length;
+  $("#lineNo").textContent = `${Math.min(LN.k + 1, need)}/${need}`;
+}
+function setIndentPrefill() {
+  const last = [...LN.rows].reverse().find(r => r.cls !== "extra" && r.cls !== "skip") || null;
+  let ind = 0;
+  if (last) { ind = last.text.match(/^ */)[0].length; if (/:\s*$/.test(last.text)) ind += 4; }
+  lineIn.value = " ".repeat(ind);
+  lineIn.setSelectionRange(ind, ind);
+}
+function skipTrailingOpt() {
+  while (LN.k < LN.items.length && LN.items[LN.k].opt) { LN.rows.push({ cls: "skip", text: LN.items[LN.k].show }); LN.k++; }
+}
+function accept(i, cls, text) {
+  LN.rows.push({ cls, text: text || LN.items[i].show });
+  LN.k = i + 1; LN.fails = 0; LN.showNow = false;
+}
+function finishLines() {
+  LN.done = true; drawLines();
+  const clean = LN.shown === 0;
+  const s = record(true, clean);
+  msg("", `<b>✓ 완성!</b> ${LN.items.filter(x => !x.opt).length}줄 · 틀린 횟수 ${LN.totalFails}번${LN.shown ? ` · 줄 보기 ${LN.shown}번` : ""} · 연속 정답 ${s.streak}개.${upHint(s)} <button type="button" class="b main" id="lNext" style="margin-left:8px">다음 문제 →</button>`);
+  $("#lNext").addEventListener("click", newProblem);
+  setTimeout(() => $("#lNext").focus(), 0);
+  lineIn.value = "";
+}
+function submitLine() {
+  if (!LN || LN.done) return;
+  const raw = lineIn.value;
+  if (!raw.trim()) return;
+  const us = logical(raw);
+  if (!us.length) { msg("", "주석만 있는 줄은 넘어갑니다."); setIndentPrefill(); return; }
+  const u = us[0];
+  const exp = LN.items[LN.k];
+  // 다음 필수 줄 (print는 건너뛸 수 있음)
+  let j = LN.k; while (j < LN.items.length && LN.items[j].opt) j++;
+  const same = (a, b) => a.key === b.key;
+  if (same(u, exp) && u.lvl === exp.lvl) {
+    accept(LN.k, LN.showNow ? "shown" : "ok", null); msg("", "✓ 맞았습니다.");
+  } else if (exp.opt && j < LN.items.length && same(u, LN.items[j]) && u.lvl === LN.items[j].lvl) {
+    for (let i = LN.k; i < j; i++) LN.rows.push({ cls: "skip", text: LN.items[i].show });
+    accept(j, LN.showNow ? "shown" : "ok", null); msg("", "✓ 맞았습니다. (print 줄은 건너뛰어도 됩니다)");
+  } else if (exp.opt && u.opt) {
+    accept(LN.k, "ok", u.show); msg("", "✓ print 줄 — 내용은 자유입니다.");
+  } else if (u.opt) {
+    LN.rows.push({ cls: "extra", text: u.show }); msg("", "print 줄은 더 넣어도 괜찮습니다. 다음 줄을 이어서 쓰세요.");
+  } else if (same(u, exp) || (j < LN.items.length && same(u, LN.items[j]))) {
+    const t = same(u, exp) ? exp : LN.items[j];
+    LN.fails++; LN.totalFails++;
+    msg("bad", `⇥ 내용은 맞는데 들여쓰기가 다릅니다. 스페이스 <b>${t.lvl * 4}칸</b>이어야 합니다. (지금 ${u.lvl * 4}칸)`);
+    return;
+  } else {
+    LN.fails++; LN.totalFails++;
+    const target = exp.opt && j < LN.items.length ? LN.items[j] : exp;
+    msg("bad", LN.fails >= 2
+      ? `✗ 다른 줄입니다. 힌트: <code>${escH(mask(target.show).trimStart())}</code>`
+      : "✗ 다른 줄입니다. 다시 써 보세요. (두 번 틀리면 힌트가 나옵니다)");
+    return;
+  }
+  skipTrailingOpt();
+  drawLines();
+  if (LN.k >= LN.items.length) { finishLines(); return; }
+  setIndentPrefill();
+}
+lineIn.addEventListener("keydown", e => {
+  if (e.isComposing) return;
+  if (e.key === "Enter") { e.preventDefault(); submitLine(); return; }
+  indentKeys(lineIn, e);
+});
+function nextTarget() { let j = LN.k; while (j < LN.items.length - 1 && LN.items[j].opt) j++; return LN.items[j]; }
+$("#lHint").addEventListener("click", () => { if (!LN || LN.done) return; msg("", `힌트: <code>${escH(mask(nextTarget().show).trimStart())}</code> (들여쓰기 ${nextTarget().lvl * 4}칸)`); lineIn.focus(); });
+$("#lShow").addEventListener("click", () => {
+  if (!LN || LN.done) return;
+  const t = nextTarget(); LN.shown++; LN.showNow = true;
+  const s = st(cur.key); s.streak = 0; save(); drawTop();
+  msg("", `이 줄: <code>${escH(t.show)}</code> — 보고 직접 쳐 보세요.`); lineIn.focus();
+});
+$("#lFresh").addEventListener("click", newProblem);
+$("#lRestart").addEventListener("click", startInput);
+
+newProblem();
+</script>
+</body>
+</html>
